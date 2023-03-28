@@ -30,7 +30,7 @@ VisTicketPresent = False
 
 DateX = ()
 DateY = ()
-
+#Penis
 CityX = ()
 CityY = ()
 
