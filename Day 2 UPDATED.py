@@ -2,14 +2,13 @@ import time
 
 import cv2
 import pyautogui
-import timer
 from PIL import ImageGrab
 import pytesseract
 import numpy as nm
 import Levenshtein
 
-from Colors import Arstotzka, Obristan, Kolechia, Impor, UnitedFed, Republia, Antegria, black, LadyCard, \
-    LadyCardSecondary, PersonColor, TextBoxColor
+from Colors import ARSTOTZKA_COLOR, PERSON_COLOR, TEXTBOX_COLOR, DAY_COLOR, DOCUMENT_AREA_COLOR, DESK_COLOR, WALL_COLOR, \
+    ANTEGRIA_COLOR, OBRISTAN_COLOR, UNITEDFED_COLOR, REPUBLIA_COLOR, IMPOR_COLOR, KOLECHIA_COLOR, LadyCard, LadyCardSecondary
 
 # Logic Variables
 PersonPresent = False
@@ -60,6 +59,11 @@ PASSPORT_BORDER_POSITION = (1845, 950)
 TEXT_BOX_POSITION = (140, 535)
 DOCUMENT_AREA_POSITION = (500, 1080)
 PASSPORT_SIDE_POSITION = (175, 1085)
+STAMP_TRAY_POSITION = (2400, 730)
+APPROVAL_STAMP_POSITION = (2100, 730)
+REJECTED_STAMP_POSITION = (1600, 695)
+APPROVED_PASSPORT_POSITION = (2100, 950)
+REJECTED_PASSPORT_POSITION = (1600, 950)
 
 Matching = "MATCHING"
 Date = ""
@@ -91,14 +95,14 @@ def drag_and_drop(start_position, end_position):
 
 def approve_passport():
     print("WELCOME!")
-    click_mouse(STAMP_TRAY_POSTITION)
+    click_mouse(STAMP_TRAY_POSITION)
     click_mouse(APPROVAL_STAMP_POSITION)
     drag_and_drop(PASSPORT_SLOT_POSITION, DOCUMENT_DROP_POSITION)
 
 
 def reject_passport():
     print("FOREIGN SCUM")
-    click_mouse(STAMP_TRAY_POSTITION)
+    click_mouse(STAMP_TRAY_POSITION)
     drag_and_drop(PASSPORT_SLOT_POSITION, REJECTED_PASSPORT_POSITION)
     click_mouse(REJECTED_STAMP_POSITION)
     drag_and_drop(REJECTED_PASSPORT_POSITION, DOCUMENT_DROP_POSITION)
@@ -116,6 +120,28 @@ def reset_person():
 
 def move_intrusive_object():
     drag_and_drop(PASSPORT_POSITION, PASSPORT_SIDE_POSITION)
+
+
+def textdetect(inspect_position, object_variable, object_boolean):
+    # Path of tesseract executable
+    time.sleep(2)
+    pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+
+    object_variable = ImageGrab.grab(bbox=inspect_position)
+
+    # Converted the image to monochrome for it to be easily
+    # read by the OCR and obtained the output String.
+    object_variable = pytesseract.image_to_string(
+        cv2.cvtColor(nm.array(object_variable), cv2.COLOR_BGR2GRAY),
+        lang='eng')
+
+    object_variable = object_variable.strip()
+    if Levenshtein.ratio(object_variable, Matching) >= 0.75:
+        print(object_variable, "Match!")
+        object_boolean = True
+    else:
+        object_boolean = False
+        print("Incorrect City!")
 
 
 # DaySTART
@@ -142,10 +168,10 @@ while get_image_color(DAY_TEST_POSITION) == DAY_COLOR:
         PersonPresent = False
         person_area = get_image_color(PERSON_POSITION)
 
-    lady_card_area = get_image_color(PASSPORT_POSITION)
-    if LadyWorker == LadyCard or LadyWorker == LadyCardSecondary:
-        move_intrusive_object()
-        print("Lady Worker Card in the way!")
+    #lady_card_area = get_image_color(PASSPORT_POSITION)
+    #if LadyWorker == LadyCard or LadyWorker == LadyCardSecondary:
+        #move_intrusive_object()
+        #print("Lady Worker Card in the way!")
 
         # Check if text box is present
         textbox_area = get_image_color(TEXT_BOX_POSITION)
@@ -171,7 +197,7 @@ while get_image_color(DAY_TEST_POSITION) == DAY_COLOR:
     if PersonPresent and PassportPresent:
         # Define a dictionary to store the values for each country
         country_dict = {
-            Arstotzka: {
+            ARSTOTZKA_COLOR: {
                 "name": "Arstotzka",
                 "DATE_POSITION": (2175, 1120),
                 "PHOTO_POSITION": (1920, 1120),
@@ -179,39 +205,41 @@ while get_image_color(DAY_TEST_POSITION) == DAY_COLOR:
                 "GENDER_POSITION": (2128, 1060),
                 "COUNTRY_POSITION": (1650, 1080),
 
-                "DATE_INSPECT_POSITION": (1070, 1295, 1165, 1255),
-                "CITY_INSPECT_POSITION": (1740, 1965, 1070, 1160),
-                "PHOTO_GENDER_INSPECT_POSITION": (1810, 2020, 780, 870),
-                "PERSON_GENDER_INSPECT_POSITION": (1260, 1490, 865, 955),
-                "PHOTO_PERSON_INSPECT_POSITION": (1145, 1360, 880, 970)
+                "DATE_INSPECT_POSITION": (1070, 1165, 1295, 1255),
+                "CITY_INSPECT_POSITION": (1740, 1070, 1965, 1160),
+                "PHOTO_GENDER_INSPECT_POSITION": (1810, 780, 2020, 870),
+                "PERSON_GENDER_INSPECT_POSITION": (1260, 865, 1490, 955),
+                "PHOTO_PERSON_INSPECT_POSITION": (1145, 880, 1360, 970)
             },
-            Antegria: {
+            ANTEGRIA_COLOR: {
                 "name": "Antegria",
                 "DATE_POSITION": (2020, 1145),
                 "PHOTO_POSITION": (2255, 1083),
                 "CITY_POSITION": (1987, 1112),
                 "GENDER_POSITION": (1947, 1073),
                 "COUNTRY_POSITION": (1033, 952),
-                "DATE_INSPECT_POSITION": (960, 1240, 1170, 1290),
-                "CITY_INSPECT_POSITION": (1660, 1870, 1080, 1170),
-                "PHOTO_GENDER_INSPECT_POSITION": (1870, 2085, 745, 825),
-                "PERSON_GENDER_INSPECT_POSITION": (1180, 1400, 870, 955),
-                "PHOTO_PERSON_INSPECT_POSITION": (1300, 1520, 865, 985)
+
+                "DATE_INSPECT_POSITION": (960, 1170, 1240, 1290),
+                "CITY_INSPECT_POSITION": (1660, 1080, 1870, 1170),
+                "PHOTO_GENDER_INSPECT_POSITION": (1870, 745, 2085, 825),
+                "PERSON_GENDER_INSPECT_POSITION": (1180, 870, 1400, 955),
+                "PHOTO_PERSON_INSPECT_POSITION": (1300, 865, 1520, 985)
             },
-            Obristan: {
+            OBRISTAN_COLOR: {
                 "name": "Obristan",
                 "DATE_POSITION": (2020, 1165),
                 "PHOTO_POSITION": (2250, 1150),
                 "CITY_POSITION": (1975, 1145),
                 "GENDER_POSITION": (1958, 1111),
                 "COUNTRY_POSITION": (1150, 780),
-                "DATE_INSPECT_POSITION": (995, 1210, 1195, 1280),
-                "CITY_INSPECT_POSITION": (1640, 1850, 1090, 1170),
-                "PHOTO_GENDER_INSPECT_POSITION": (1870, 2100, 825, 900),
-                "PERSON_GENDER_INSPECT_POSITION": (1185, 1400, 890, 970),
-                "PHOTO_PERSON_INSPECT_POSITION": (1300, 1510, 900, 1002)
+
+                "DATE_INSPECT_POSITION": (995, 1195, 1210, 1280),
+                "CITY_INSPECT_POSITION": (1640, 1090, 1850, 1170),
+                "PHOTO_GENDER_INSPECT_POSITION": (1870, 825, 2100, 900),
+                "PERSON_GENDER_INSPECT_POSITION": (1185, 890, 1400, 970),
+                "PHOTO_PERSON_INSPECT_POSITION": (1300, 900, 1510, 1002)
             },
-            Impor: {
+            IMPOR_COLOR: {
                 "name": "Impor",
                 "DATE_POSITION": (2175, 1120),
                 "PHOTO_POSITION": (1920, 1150),
@@ -219,13 +247,13 @@ while get_image_color(DAY_TEST_POSITION) == DAY_COLOR:
                 "GENDER_POSITION": (2128, 1054),
                 "COUNTRY_POSITION": (1190, 1270),
 
-                "DATE_INSPECT_POSITION": (1075, 1295, 1170, 1250),
-                "CITY_INSPECT_POSITION": (1720, 1930, 1065, 1155),
-                "PHOTO_GENDER_INSPECT_POSITION": (1810, 2030, 780, 870),
-                "PERSON_GENDER_INSPECT_POSITION": (1260, 1495, 860, 950),
-                "PHOTO_PERSON_INSPECT_POSITION": (1150, 1370, 880, 970)
+                "DATE_INSPECT_POSITION": (1075, 1170, 1295, 1250),
+                "CITY_INSPECT_POSITION": (1720, 1065, 1930, 1155),
+                "PHOTO_GENDER_INSPECT_POSITION": (1810, 780, 2030, 870),
+                "PERSON_GENDER_INSPECT_POSITION": (1260, 860, 1495, 950),
+                "PHOTO_PERSON_INSPECT_POSITION": (1150, 880, 1370, 970)
             },
-            Kolechia: {
+            KOLECHIA_COLOR: {
                 "name": "Kolechia",
                 "DATE_POSITION": (2175, 1150),
                 "PHOTO_POSITION": (1920, 1150),
@@ -233,13 +261,13 @@ while get_image_color(DAY_TEST_POSITION) == DAY_COLOR:
                 "GENDER_POSITION": (2128, 1095),
                 "COUNTRY_POSITION": (1450, 810),
 
-                "DATE_INSPECT_POSITION": (1075, 1295, 1190, 1270),
-                "CITY_INSPECT_POSITION": (1740, 1950, 1085, 1175),
-                "PHOTO_GENDER_INSPECT_POSITION": (1810, 2020, 815, 910),
-                "PERSON_GENDER_INSPECT_POSITION": (1260, 1495, 875, 969),
-                "PHOTO_PERSON_INSPECT_POSITION": (1150, 1370, 910, 992)
+                "DATE_INSPECT_POSITION": (1075, 1190, 1295, 1270),
+                "CITY_INSPECT_POSITION": (1740, 1085, 1950, 1175),
+                "PHOTO_GENDER_INSPECT_POSITION": (1810, 815, 2020, 910),
+                "PERSON_GENDER_INSPECT_POSITION": (1260, 875, 1495, 969),
+                "PHOTO_PERSON_INSPECT_POSITION": (1150, 910, 1370, 992)
             },
-            UnitedFed: {
+            UNITEDFED_COLOR: {
                 "name": "UnitedFed",
                 "DATE_POSITION": (2175, 1150),
                 "PHOTO_POSITION": (1920, 1150),
@@ -247,13 +275,13 @@ while get_image_color(DAY_TEST_POSITION) == DAY_COLOR:
                 "GENDER_POSITION": (2128, 1095),
                 "COUNTRY_POSITION": (900, 1220),
 
-                "DATE_INSPECT_POSITION": (1075, 1295, 1180, 1270),
-                "CITY_INSPECT_POSITION": (1720, 1950, 1075, 1195),
-                "PHOTO_GENDER_INSPECT_POSITION": (1810, 2020, 825, 900),
-                "PERSON_GENDER_INSPECT_POSITION": (1260, 1495, 875, 969),
-                "PHOTO_PERSON_INSPECT_POSITION": (1150, 1400, 900, 1000)
+                "DATE_INSPECT_POSITION": (1075, 1180, 1295, 1270),
+                "CITY_INSPECT_POSITION": (1720, 1075, 1950, 1195),
+                "PHOTO_GENDER_INSPECT_POSITION": (1810, 825, 2020, 900),
+                "PERSON_GENDER_INSPECT_POSITION": (1260, 875, 1495, 969),
+                "PHOTO_PERSON_INSPECT_POSITION": (1150, 900, 1400, 1000)
             },
-            Republia: {
+            REPUBLIA_COLOR: {
                 "name": "Republia",
                 "DATE_POSITION": (2000, 1120),
                 "PHOTO_POSITION": (2250, 1110),
@@ -261,11 +289,11 @@ while get_image_color(DAY_TEST_POSITION) == DAY_COLOR:
                 "GENDER_POSITION": (1962, 1055),
                 "COUNTRY_POSITION": (1100, 1120),
 
-                "DATE_INSPECT_POSITION": (995, 1212, 1165, 1270),
-                "CITY_INSPECT_POSITION": (1650, 1860, 1070, 1150),
-                "PHOTO_GENDER_INSPECT_POSITION": (1875, 2100, 770, 850),
-                "PERSON_GENDER_INSPECT_POSITION": (1185, 1410, 860, 950),
-                "PHOTO_PERSON_INSPECT_POSITION": (1300, 1520, 880, 970)
+                "DATE_INSPECT_POSITION": (995, 1165, 1212, 1270),
+                "CITY_INSPECT_POSITION": (1650, 1070, 1860, 1150),
+                "PHOTO_GENDER_INSPECT_POSITION": (1875, 770, 2100, 850),
+                "PERSON_GENDER_INSPECT_POSITION": (1185, 860, 1410, 950),
+                "PHOTO_PERSON_INSPECT_POSITION": (1300, 880, 1520, 970)
             }
         }
 
@@ -293,8 +321,7 @@ while get_image_color(DAY_TEST_POSITION) == DAY_COLOR:
                 break
 
         # Print the values of the variables for the matching country
-        print(f"The variables for {matching_country} are:")
-        print(f" {name}")
+        print(f" {name}!")
 
     # COMAPARE
 
@@ -309,28 +336,7 @@ while get_image_color(DAY_TEST_POSITION) == DAY_COLOR:
         click_mouse(CITY_POSITION)
         click_mouse(ISSUING_CITIES_POSITION)
 
-        # Path of tesseract executable
-        time.sleep(2)
-        pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
-
-        cap = ImageGrab.grab(bbox=CITY_INSPECT_POSITION)
-
-        # Converted the image to monochrome for it to be easily
-        # read by the OCR and obtained the output String.
-        City = pytesseract.image_to_string(
-            cv2.cvtColor(nm.array(cap), cv2.COLOR_BGR2GRAY),
-            lang='eng')
-
-        City = City.strip()
-        print(City)
-
-        similarity_ratio = Levenshtein.ratio(City, Matching)
-        if similarity_ratio >= 0.75:
-            print("City Match!")
-            CorrectCity = True
-        else:
-            CorrectCity = False
-            print("Incorrect City!")
+        textdetect(CITY_INSPECT_POSITION, "City", CorrectCity)
 
         click_mouse(INSPECT_BUTTON_POSITION)
 
@@ -338,241 +344,3 @@ while get_image_color(DAY_TEST_POSITION) == DAY_COLOR:
         click_mouse(BOOKMARK_POSITION)
 
         drag_and_drop(RULE_BOOK_SLOT_POSITION, RULE_BOOK_POSITION)
-
-    if CorrectCity:
-
-        # CHECK DATE
-        pyautogui.moveTo(InspectButtonX, InspectButtonY)
-        pyautogui.click()
-
-        pyautogui.moveTo(DateX, DateY)
-        pyautogui.click()
-        pyautogui.moveTo(ClockX, ClockY)
-        pyautogui.click()
-
-        # Path of tesseract executable
-        time.sleep(2)
-        pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
-
-        cap = ImageGrab.grab(bbox=(DateInspectTopX, DateInspectTopY, DateInspectBottomX, DateInspectBottomY))
-
-        # Converted the image to monochrome for it to be easily
-        # read by the OCR and obtained the output String.
-        Date = pytesseract.image_to_string(
-            cv2.cvtColor(nm.array(cap), cv2.COLOR_BGR2GRAY),
-            lang='eng')
-
-        Date = Date.strip()
-        print(Date)
-
-        similarity_ratio = Levenshtein.ratio(Date, Matching)
-        if similarity_ratio >= 0.75:
-            CorrectDate = True
-            print("Dates Match!")
-        else:
-            CorrectDate = False
-            print("Incorrect Dates!")
-
-        pyautogui.moveTo(InspectButtonX, InspectButtonY)
-        pyautogui.click()
-
-    if CorrectDate:
-        pyautogui.moveTo(InspectButtonX, InspectButtonY)
-        pyautogui.click()
-
-        # CHECK GENDER WITH PHOTO
-        pyautogui.moveTo(PhotoX, PhotoY)
-
-        pyautogui.click()
-
-        pyautogui.moveTo(GenderX, GenderY)
-
-        pyautogui.click()
-
-        # Path of tesseract executable
-        time.sleep(3)
-        pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
-
-        cap = ImageGrab.grab(
-            bbox=(PhotoGenderInspectTopX, PhotoGenderInspectTopY, PhotoGenderInspectBottomX, PhotoGenderInspectBottomY))
-
-        # Converted the image to monochrome for it to be easily
-        # read by the OCR and obtained the output String.
-        PhotoGenderMatch = pytesseract.image_to_string(
-            cv2.cvtColor(nm.array(cap), cv2.COLOR_BGR2GRAY),
-            lang='eng')
-
-        PhotoGenderMatch = PhotoGenderMatch.strip()
-        print(PhotoGenderMatch)
-
-        similarity_ratio = Levenshtein.ratio(PhotoGenderMatch, Matching)
-        if similarity_ratio >= 0.75:
-            PhotoGenderMatch = True
-            print("Gender Matches Passport!")
-        else:
-            PhotoGenderMatch = False
-            print("Gender Doesn't Match Passport!")
-
-        pyautogui.moveTo(InspectButtonX, InspectButtonY)
-        pyautogui.click()
-
-    if PhotoGenderMatch:
-        pyautogui.moveTo(InspectButtonX, InspectButtonY)
-        pyautogui.click()
-
-        # CHECK GENDER WITH Person
-        pyautogui.moveTo(PersonX, PersonY)
-        pyautogui.click()
-
-        pyautogui.moveTo(GenderX, GenderY)
-        pyautogui.click()
-
-        # Path of tesseract executable
-        time.sleep(2)
-        pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
-
-        cap = ImageGrab.grab(
-            bbox=(
-            PersonGenderInspectTopX, PersonGenderInspectTopY, PersonGenderInspectBottomX, PersonGenderInspectBottomY))
-
-        # Converted the image to monochrome for it to be easily
-        # read by the OCR and obtained the output String.
-        PersonGenderMatch = pytesseract.image_to_string(
-            cv2.cvtColor(nm.array(cap), cv2.COLOR_BGR2GRAY),
-            lang='eng')
-
-        PersonGenderMatch = PersonGenderMatch.strip()
-        print(PersonGenderMatch)
-
-        similarity_ratio = Levenshtein.ratio(PersonGenderMatch, Matching)
-        if similarity_ratio >= 0.75:
-            PersonGenderMatch = True
-            print("Correct Gender!")
-        else:
-            PersonGenderMatch = False
-            print("Incorrect Gender!")
-
-        pyautogui.moveTo(InspectButtonX, InspectButtonY)
-        pyautogui.click()
-
-    if PersonGenderMatch:
-        pyautogui.moveTo(InspectButtonX, InspectButtonY)
-        pyautogui.click()
-
-        # CHECK PERSON WITH PHOTO
-        pyautogui.moveTo(PersonX, PersonY)
-        pyautogui.click()
-
-        pyautogui.moveTo(PhotoX, PhotoY)
-        time.sleep(1)
-        pyautogui.click()
-
-        # Path of tesseract executable
-        time.sleep(2)
-        pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
-
-        cap = ImageGrab.grab(
-            bbox=(PhotoPersonInspectTopX, PhotoPersonInspectTopY, PhotoPersonInspectBottomX, PhotoPersonInspectBottomY))
-
-        # Converted the image to monochrome for it to be easily
-        # read by the OCR and obtained the output String.
-        PhotoPersonMatch = pytesseract.image_to_string(
-            cv2.cvtColor(nm.array(cap), cv2.COLOR_BGR2GRAY),
-            lang='eng')
-
-        PhotoPersonMatch = PhotoPersonMatch.strip()
-        print(PhotoPersonMatch)
-
-        similarity_ratio = Levenshtein.ratio(PhotoPersonMatch, Matching)
-        if similarity_ratio >= 0.75:
-            PhotoPersonMatch = True
-            print("Correct Photo!")
-        else:
-            PhotoPersonMatch = False
-            print("Incorrect Photo!")
-
-        pyautogui.moveTo(InspectButtonX, InspectButtonY)
-        pyautogui.click()
-
-    if PhotoPersonMatch:
-        print("WELCOME!")
-        pyautogui.moveTo(2400, 730)
-        pyautogui.click()
-        time.sleep(0.1)
-        pyautogui.moveTo(2100, 730)
-        pyautogui.click()
-        pyautogui.moveTo(2100, 950)
-        pyautogui.mouseDown(button='left')
-        pyautogui.moveTo(480, 730)
-        pyautogui.mouseUp(button='left')
-        pyautogui.moveTo(1320, 730)
-        pyautogui.click()
-
-        PersonPresent = False
-        PassportPresent = False
-        PhotoPersonMatch = False
-        PersonGenderMatch = False
-        PhotoGenderMatch = False
-        CorrectDate = False
-        CorrectCity = False
-        StampingTime = False
-        NextPerson = False
-        PersonLeaving = False
-        TextBoxPresent = False
-        VisPassportPresent = False
-
-        VisPassport = ()
-        PersonLeaving = ()
-        TextBox = ()
-        wallStat = ()
-        LadyWorker = ()
-        wallStat = (25, 18, 18)
-
-        while PersonLeaving != PersonColor:
-            # Accepted Person Leaving Detect
-            apl = ImageGrab.grab().load()
-            for y in range(AcceptedPersonLeavingY, AcceptedPersonLeavingY + 1):
-                for x in range(AcceptedPersonLeavingX, AcceptedPersonLeavingX + 1):
-                    PersonLeaving = apl[x, y]
-    elif StampingTime:
-        pyautogui.moveTo(InspectButtonX, InspectButtonY)
-        pyautogui.click()
-
-        pyautogui.moveTo(2101, 800)
-        pyautogui.mouseDown(button='left')
-        pyautogui.moveTo(1800, 800)
-        pyautogui.mouseUp(button='left')
-        pyautogui.click(2400, 750)
-        time.sleep(1)
-        pyautogui.click(1500, 695)
-        pyautogui.moveTo(1600, 1000)
-        pyautogui.mouseDown(button='left')
-        pyautogui.moveTo(DocumentDropX, DocumentDropY)
-        pyautogui.mouseUp(button='left')
-
-        PersonPresent = False
-        PassportPresent = False
-        PhotoPersonMatch = False
-        PersonGenderMatch = False
-        PhotoGenderMatch = False
-        CorrectDate = False
-        CorrectCity = False
-        StampingTime = False
-        NextPerson = False
-        PersonLeaving = False
-        TextBoxPresent = False
-        VisPassportPresent = False
-
-        VisPassport = ()
-        PersonLeaving = ()
-        TextBox = ()
-        wallStat = ()
-        LadyWorker = ()
-        wallStat = (25, 18, 18)
-
-        while PersonLeaving != PersonColor:
-            # Rejected Person Leaving Detect
-            rpl = ImageGrab.grab().load()
-            for y in range(RejectedPersonLeavingY, RejectedPersonLeavingY + 1):
-                for x in range(RejectedPersonLeavingX, RejectedPersonLeavingX + 1):
-                    PersonLeaving = rpl[x, y]
