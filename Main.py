@@ -3,90 +3,52 @@ import pydirectinput
 import pyautogui
 from PIL import ImageGrab
 
+EXT_BOX_POSITION = (95, 535)
 
-SpeakerX = 830
-SpeakerY = 370
+PASSPORT_POSITION = (430, 1085)
+DOCUMENT_DROP_POSITION = (435, 600)
+PERSON_POSITION = (445, 850)
 
-LeverX = 850
-LeverY = 550
+DOCUMENT_AREA_POSITION = (455, 1080)
 
-RuleBookSlotX = 1300
-RuleBookSlotY = 1050
+REJECTED_PERSON_LEAVING_POSITION = (655, 450)
+SPEAKER_POSITION = (785, 345)
+LEVER_POSITION = (805, 550)
 
-RuleBookX = 640
-RuleBookY = 1250
+ACCEPTED_PERSON_LEAVING_POSITION = (915, 450)
 
-PassportX = 550
-PassportY = 1090
+DAY_TEST_POSITION = (1569, 180)
 
-PassportSlotX = 2100
-PassportSlotY = 950
+REJECTED_STAMP_POSITION = (1725, 695)
+REJECTED_PASSPORT_POSITION = (1725, 1070)
+PASSPORT_BORDER_POSITION = (1970, 1070)
+PASSPORT_SLOT_POSITION = (2225, 1070)
+APPROVAL_STAMP_POSITION = (2225, 730)
+APPROVED_PASSPORT_POSITION = (2225, 1070)
 
-TicketX = 500
-TicketY = 1065
+STAMP_TRAY_POSITION = (2525, 730)
 
-TicketSlotX = 1260
-TicketSlotY = 625
 
-TicketDateX = 1400
-TicketDateY = 670
+def move_mouse(position):
+    pyautogui.moveTo(position)
 
-RegionalMapX = 1510
-RegionalMapY = 970
 
-InspectButtonX = 2350
-InspectButtonY = 1320
 
-IssuingCitiesX = 1400
-IssuingCitiesY = 1120
+def click_mouse(position):
+    move_mouse(position)
+    pyautogui.click()
 
-PersonX = 470
-PersonY = 900
 
-DocumentDropX = 480
-DocumentDropY = 730
-
-DayTestX = 1444
-DayTestY = 180
-
-BookMarkX = 870
-BookMarkY = 750
-
-ClockX = 200
-ClockY = 1320
-
-AcceptedPersonLeavingX = 960
-AcceptedPersonLeavingY = 450
-
-RejectedPersonLeavingX = 700
-RejectedPersonLeavingY = 450
-
-RuleBookBasicsX = 1500
-RuleBookBasicsY = 910
-
-PassportRuleX = 1000
-PassportRuleY = 850
-
-InterrogateX = 500
-InterrogateY = 1230
-
-PassportBorderX = 1845
-PassportBorderY = 950
-
-DocumentHandOverX = 140
-DocumentHandOverY = 535
-
+def drag_and_drop(start_position, end_position):
+    move_mouse(start_position)
+    pyautogui.mouseDown(button='left')
+    move_mouse(end_position)
+    time.sleep(0.3)
+    pyautogui.mouseUp(button='left')
 
 # MOVE PASSPORT
 
-pyautogui.moveTo(PassportX, PassportY)
-pyautogui.mouseDown(button='left')
-pyautogui.moveTo(PassportSlotX, PassportSlotY)
-time.sleep(0.03)
-pyautogui.mouseUp(button='left')
+drag_and_drop(PASSPORT_POSITION, PASSPORT_SLOT_POSITION)
 
-pyautogui.moveTo(TicketX, TicketY)
-pyautogui.mouseDown(button='left')
-pyautogui.moveTo(TicketSlotX, TicketSlotY)
-pyautogui.mouseUp(button='left')
-
+# MOVE RULE
+drag_and_drop(RULE_BOOK_POSITION, RULE_BOOK_SLOT_POSITION)

@@ -7,9 +7,9 @@ import pytesseract
 import numpy as nm
 import Levenshtein
 
-
 from Colors import ARSTOTZKA_COLOR, PERSON_COLOR, TEXTBOX_COLOR, DAY_COLOR, DOCUMENT_AREA_COLOR, DESK_COLOR, WALL_COLOR, \
-    ANTEGRIA_COLOR, OBRISTAN_COLOR, UNITEDFED_COLOR, REPUBLIA_COLOR, IMPOR_COLOR, KOLECHIA_COLOR, LadyCard, LadyCardSecondary
+    ANTEGRIA_COLOR, OBRISTAN_COLOR, UNITEDFED_COLOR, REPUBLIA_COLOR, IMPOR_COLOR, KOLECHIA_COLOR, LadyCard, \
+    LadyCardSecondary
 
 # Logic Variables
 PersonPresent = False
@@ -66,6 +66,8 @@ REJECTED_STAMP_POSITION = (1600, 695)
 APPROVED_PASSPORT_POSITION = (2100, 950)
 REJECTED_PASSPORT_POSITION = (1600, 950)
 
+
+
 Matching = "MATCHING"
 Date = ""
 City = ""
@@ -119,81 +121,73 @@ def reset_person():
     NextPerson = False
 
 
+def inspection(first_inspect_item_location, second_inspect_item_location):
+    click_mouse(INSPECT_BUTTON_POSITION)
+    click_mouse(first_inspect_item_location)
+    click_mouse(second_inspect_item_location)
+
+
 def move_intrusive_object():
     drag_and_drop(PASSPORT_POSITION, PASSPORT_SIDE_POSITION)
 
 
-def textdetect(inspect_position, object_variable, object_boolean):
+def textdetect(inspect_position):
     # Path of tesseract executable
     time.sleep(2)
     pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
-    object_variable = ImageGrab.grab(bbox=inspect_position)
-
     # Converted the image to monochrome for it to be easily
     # read by the OCR and obtained the output String.
-    object_variable = pytesseract.image_to_string(
-        cv2.cvtColor(nm.array(object_variable), cv2.COLOR_BGR2GRAY),
+    text = pytesseract.image_to_string(
+        cv2.cvtColor(nm.array(ImageGrab.grab(bbox=inspect_position)), cv2.COLOR_BGR2GRAY),
         lang='eng')
 
-    object_variable = object_variable.strip()
-    if Levenshtein.ratio(object_variable, Matching) >= 0.75:
-        print(object_variable, "Match!")
-        object_boolean = True
+    text = text.strip()
+    print(text)
+    if Levenshtein.ratio(text, Matching) >= 0.75:
+        return True
     else:
-        object_boolean = False
-        print("Incorrect City!")
+        return False
 
 
 # DaySTART
 click_mouse(LEVER_POSITION)
 click_mouse(SPEAKER_POSITION)
-time.sleep(1)
+
+name = ()
+matching_country = ()
+person_leaving_area = ()
 
 while get_image_color(DAY_TEST_POSITION) == DAY_COLOR:
-    # Check if Person has left the booth
-    if person_leaving_area != PERSON_COLOR:
-        NextPerson = False
-    else:
-        NextPerson = True
-        person_leaving_area = ()
-        click_mouse(SPEAKER_POSITION)
-        print("Ready for Next Person")
-
     # Check if person is present
+    person_area = get_image_color(PERSON_POSITION)
     if person_area != WALL_COLOR:
         if not PersonPresent:
             PersonPresent = True
             print("Person Detected")
     else:
         PersonPresent = False
-        person_area = get_image_color(PERSON_POSITION)
 
-    #lady_card_area = get_image_color(PASSPORT_POSITION)
-    #if LadyWorker == LadyCard or LadyWorker == LadyCardSecondary:
-        #move_intrusive_object()
-        #print("Lady Worker Card in the way!")
+    # Check if text box is present
+    textbox_area = get_image_color(TEXT_BOX_POSITION)
+    if PersonPresent and textbox_area == TEXTBOX_COLOR:
+        time.sleep(1.5)
 
-        # Check if text box is present
-        textbox_area = get_image_color(TEXT_BOX_POSITION)
-        if PersonPresent and textbox_area == TEXTBOX_COLOR:
-            time.sleep(1.5)
+        # Check if passport is present in Document area
+        document_area = get_image_color(DOCUMENT_AREA_POSITION)
 
-            # Check if passport is present in Document area
-            document_area = get_image_color(DOCUMENT_AREA_POSITION)
+        if document_area != DOCUMENT_AREA_COLOR:
+            # MOVE PASSPORT TO SLOT
+            drag_and_drop(PASSPORT_POSITION, PASSPORT_SLOT_POSITION)
+            PassportPresent = True
+            print("Passport Detected")
+        else:
+            NoPassport = True
+            PassportPresent = False
+            print("No Passport!")
 
-            if document_area != DOCUMENT_AREA_COLOR:
-                # MOVE PASSPORT TO SLOT
-                drag_and_drop(PASSPORT_POSITION, PASSPORT_SLOT_POSITION)
-                PassportPresent = True
-                print("Passport Detected")
-            else:
-                NoPassport = True
-                PassportPresent = False
-                print("No Passport!")
-
-        # Check passport border color to determine country
-        country = get_image_color(PASSPORT_BORDER_POSITION)
+    country = get_image_color(PASSPORT_BORDER_POSITION)
+    print(country)
 
     if PersonPresent and PassportPresent:
         # Define a dictionary to store the values for each country
@@ -322,9 +316,7 @@ while get_image_color(DAY_TEST_POSITION) == DAY_COLOR:
                 break
 
         # Print the values of the variables for the matching country
-        print(f" {name}!")
-
-    # COMAPARE
+        print(f"{name}!")
 
     if StampingTime:
         # MOVE RULE
@@ -333,15 +325,52 @@ while get_image_color(DAY_TEST_POSITION) == DAY_COLOR:
         # CHECK CITY
         click_mouse(REGIONAL_MAP_POSITION)
         click_mouse(COUNTRY_POSITION)
+        inspection(CITY_POSITION, ISSUING_CITIES_POSITION)
+
+        # Validate Issuing City
+        CorrectCity = textdetect(CITY_INSPECT_POSITION)
+        if CorrectCity:
+            print("Valid issuing city!")
+        else:
+            print("Invalid issuing city!")
+
         click_mouse(INSPECT_BUTTON_POSITION)
-        click_mouse(CITY_POSITION)
-        click_mouse(ISSUING_CITIES_POSITION)
 
-        textdetect(CITY_INSPECT_POSITION, "City", CorrectCity)
-
-        click_mouse(INSPECT_BUTTON_POSITION)
-
-        # RULE BOOK BACK
+        # MOVE RULE BOOK BACK
         click_mouse(BOOKMARK_POSITION)
-
         drag_and_drop(RULE_BOOK_SLOT_POSITION, RULE_BOOK_POSITION)
+
+    if CorrectCity:
+        inspection(DATE_POSITION, CLOCK_POSITION)
+        CorrectDate = textdetect(DATE_INSPECT_POSITION)
+        if CorrectDate:
+            print("Valid Date!")
+        else:
+            print("Passport Out Of Date!")
+
+        click_mouse(INSPECT_BUTTON_POSITION)
+
+    if CorrectDate:
+        inspection(GENDER_POSITION, PERSON_POSITION)
+        PersonGenderMatch = textdetect(PERSON_GENDER_INSPECT_POSITION)
+        if PersonGenderMatch:
+            print("Valid Gender!")
+        else:
+            print("InValid Gender!")
+
+        click_mouse(INSPECT_BUTTON_POSITION)
+
+    if PersonGenderMatch:
+        inspection(PHOTO_POSITION, PERSON_POSITION)
+        PhotoPersonMatch = textdetect(PHOTO_PERSON_INSPECT_POSITION)
+        if PhotoPersonMatch:
+            print("Valid Photo!")
+        else:
+            print("InValid Photo!")
+
+        click_mouse(INSPECT_BUTTON_POSITION)
+
+    if PhotoPersonMatch:
+        print("VALID PASSPORT!")
+    else:
+        print("INVALID PASSPORT")

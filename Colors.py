@@ -1,5 +1,5 @@
 # COUNTRY COLORS
-ARSTOTZKA_COLOR = (60, 72, 59)
+ARSTOTZKA_COLOR = (59, 72, 59)
 IMPOR_COLOR = (102, 31, 9)
 UNITEDFED_COLOR = (35, 30, 85)
 REPUBLIA_COLOR = (76, 42, 27)
@@ -24,6 +24,3 @@ LadyCardSecondary = (255, 106, 106)
 
 TicketColor = (180, 169, 151)
 TicketColor2 = (224, 233, 199)
-
-
-
