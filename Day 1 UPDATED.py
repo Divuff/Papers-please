@@ -5,30 +5,47 @@ from PIL import ImageGrab
 from Colors import ARSTOTZKA_COLOR, PERSON_COLOR, TEXTBOX_COLOR, DAY_COLOR, DOCUMENT_AREA_COLOR, WALL_COLOR
 
 # Positions
-TEXT_BOX_POSITION = (95, 535)
+TEXT_BOX_POSITION = (140, 535)
+PASSPORT_SIDE_POSITION = (175, 1085)
+CLOCK_POSITION = (200, 1320)
 
-PASSPORT_POSITION = (430, 1085)
-DOCUMENT_DROP_POSITION = (435, 600)
-PERSON_POSITION = (445, 850)
+PASSPORT_POSITION = (475, 1085)
+DOCUMENT_DROP_POSITION = (480, 600)
+PERSON_POSITION = (490, 850)
+INTERROGATE_POSITION = (500, 1230)
+DOCUMENT_AREA_POSITION = (500, 1080)
 
-DOCUMENT_AREA_POSITION = (455, 1080)
+RULE_BOOK_POSITION = (640, 1250)
+REJECTED_PERSON_LEAVING_POSITION = (700, 430)
+SPEAKER_POSITION = (830, 370)
 
-REJECTED_PERSON_LEAVING_POSITION = (655, 450)
-SPEAKER_POSITION = (785, 345)
-LEVER_POSITION = (805, 550)
+LEVER_POSITION = (850, 550)
+BOOKMARK_POSITION = (870, 750)
+ACCEPTED_PERSON_LEAVING_POSITION = (960, 430)
 
-ACCEPTED_PERSON_LEAVING_POSITION = (915, 450)
+PASSPORT_RULE_POSITION = (1000, 850)
 
-DAY_TEST_POSITION = (1569, 180)
 
-REJECTED_STAMP_POSITION = (1725, 695)
-REJECTED_PASSPORT_POSITION = (1725, 1070)
-PASSPORT_BORDER_POSITION = (1970, 1070)
-PASSPORT_SLOT_POSITION = (2225, 1070)
-APPROVAL_STAMP_POSITION = (2225, 730)
-APPROVED_PASSPORT_POSITION = (2225, 1070)
 
-STAMP_TRAY_POSITION = (2525, 730)
+
+
+RULE_BOOK_SLOT_POSITION = (1300, 1050)
+ISSUING_CITIES_POSITION = (1400, 1120)
+DAY_TEST_POSITION = (1444, 180)
+RULE_BOOK_BASICS_POSITION = (1500, 910)
+
+REGIONAL_MAP_POSITION = (1510, 970)
+REJECTED_STAMP_POSITION = (1600, 695)
+
+
+PASSPORT_BORDER_POSITION = (1845, 950)
+
+PASSPORT_SLOT_POSITION = (2100, 950)
+APPROVAL_STAMP_POSITION = (2100, 730)
+APPROVED_PASSPORT_POSITION = (2100, 950)
+
+INSPECT_BUTTON_POSITION = (2350, 1320)
+STAMP_TRAY_POSITION = (2400, 730)
 
 # Logic Variables
 PersonPresent = False
@@ -46,7 +63,7 @@ def get_image_color(position):
 
 def move_mouse(position):
     pyautogui.moveTo(position)
-    time.sleep(0.3)
+
 
 
 def click_mouse(position):
@@ -58,12 +75,14 @@ def drag_and_drop(start_position, end_position):
     move_mouse(start_position)
     pyautogui.mouseDown(button='left')
     move_mouse(end_position)
+    time.sleep(0.3)
     pyautogui.mouseUp(button='left')
 
 
 def approve_passport():
     print("WELCOME!")
     click_mouse(STAMP_TRAY_POSITION)
+    time.sleep(0.3)
     click_mouse(APPROVAL_STAMP_POSITION)
     drag_and_drop(PASSPORT_SLOT_POSITION, DOCUMENT_DROP_POSITION)
 
@@ -71,6 +90,7 @@ def approve_passport():
 def reject_passport():
     print("FOREIGN SCUM")
     click_mouse(STAMP_TRAY_POSITION)
+    time.sleep(0.3)
     drag_and_drop(PASSPORT_SLOT_POSITION, REJECTED_PASSPORT_POSITION)
     click_mouse(REJECTED_STAMP_POSITION)
     drag_and_drop(REJECTED_PASSPORT_POSITION, DOCUMENT_DROP_POSITION)
@@ -94,12 +114,24 @@ time.sleep(1)
 person_leaving_area = ()
 while get_image_color(DAY_TEST_POSITION) == DAY_COLOR:
 
+
+    # Person Leaving Booth Check
+    if person_leaving_area != PERSON_COLOR:
+        NextPerson = False
+    else:
+        NextPerson = True
+        PersonLeaving = ()
+        pyautogui.click(SpeakerX, SpeakerY)
+        print("Ready for Next Person")
+
+
     # Check if person is present
     person_area = get_image_color(PERSON_POSITION)
     if person_area != WALL_COLOR:
         if not PersonPresent:
             PersonPresent = True
             print("Person Detected")
+
     else:
         PersonPresent = False
 
@@ -124,6 +156,7 @@ while get_image_color(DAY_TEST_POSITION) == DAY_COLOR:
 
     country = get_image_color(PASSPORT_BORDER_POSITION)
 
+
     if country == ARSTOTZKA_COLOR:
         Arstotzkan = True
         print("Arstotzkan Detected")
@@ -138,6 +171,7 @@ while get_image_color(DAY_TEST_POSITION) == DAY_COLOR:
 
             while person_leaving_area != PERSON_COLOR:
                 person_leaving_area = get_image_color(ACCEPTED_PERSON_LEAVING_POSITION)
+
 
         # REJECTED STAMP
         elif StampingTime:

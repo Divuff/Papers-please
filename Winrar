@@ -1,0 +1,36 @@
+TEXT_BOX_POSITION output should be  (100, 500)
+PASSPORT_SIDE_POSITION output should be  (150, 1060)
+CLOCK_POSITION output should be  (100, 1295)
+PASSPORT_POSITION output should be  (410, 1115)
+DOCUMENT_DROP_POSITION output should be  (435, 620)
+PERSON_POSITION output should be  (445, 870)
+INTERROGATE_POSITION output should be  (455, 1250)
+DOCUMENT_AREA_POSITION output should be  (455, 1100)
+RULE_BOOK_POSITION output should be  (595, 1270)
+REJECTED_PERSON_LEAVING_POSITION output should be  (655, 470)
+SPEAKER_POSITION output should be  (785, 345)
+LEVER_POSITION output should be  (805, 525)
+BOOKMARK_POSITION output should be  (825, 725)
+ACCEPTED_PERSON_LEAVING_POSITION output should be  (915, 470)
+PASSPORT_RULE_POSITION output should be  (955, 870)
+RULE_BOOK_SLOT_POSITION output should be  (1255, 1070)
+ISSUING_CITIES_POSITION output should be  (1355, 1140)
+DAY_TEST_POSITION output should be  (1399, 200)
+RULE_BOOK_BASICS_POSITION output should be  (1455, 930)
+REGIONAL_MAP_POSITION output should be  (1465, 990)
+REJECTED_STAMP_POSITION output should be  (1555, 715)
+REJECTED_PASSPORT_POSITION output should be  (1555, 970)
+PASSPORT_BORDER_POSITION should be (1940, 1070)
+PASSPORT_SLOT_POSITION output should be  (2175, 970)
+APPROVAL_STAMP_POSITION output should be  (2175, 750)
+APPROVED_PASSPORT_POSITION output should be  (2175, 970)
+INSPECT_BUTTON_POSITION (2475, 1440)
+STAMP_TRAY_POSITION output should be  (2525, 700)
+
+
+
+
+
+
+
+

@@ -4,8 +4,10 @@ import cv2
 import pyautogui
 from PIL import ImageGrab
 import pytesseract
-import numpy as nm
-import Levenshtein
+import os
+import numpy as np
+from google.cloud import vision
+from Levenshtein import ratio
 
 from Colors import ARSTOTZKA_COLOR, PERSON_COLOR, TEXTBOX_COLOR, DAY_COLOR, DOCUMENT_AREA_COLOR, DESK_COLOR, WALL_COLOR, \
     ANTEGRIA_COLOR, OBRISTAN_COLOR, UNITEDFED_COLOR, REPUBLIA_COLOR, IMPOR_COLOR, KOLECHIA_COLOR, LadyCard, \
@@ -15,15 +17,15 @@ from Colors import ARSTOTZKA_COLOR, PERSON_COLOR, TEXTBOX_COLOR, DAY_COLOR, DOCU
 PersonPresent = False
 PassportPresent = False
 StampingTime = False
-PassportStatus = False
+NoPassport = False
 CorrectDate = False
 CorrectCity = False
 PhotoPersonMatch = False
 PersonGenderMatch = False
-PhotoGenderMatch = False
 NextPerson = False
 TextBoxPresent = False
-VisPassportPresent = False
+
+
 
 DATE_POSITION = ()
 PHOTO_POSITION = ()
@@ -51,8 +53,8 @@ DOCUMENT_DROP_POSITION = (480, 600)
 DAY_TEST_POSITION = (1444, 180)
 BOOKMARK_POSITION = (870, 750)
 CLOCK_POSITION = (200, 1320)
-ACCEPTED_PERSON_LEAVING_POSITION = (960, 450)
-REJECTED_PERSON_LEAVING_POSITION = (700, 450)
+ACCEPTED_PERSON_LEAVING_POSITION = (960, 430)
+REJECTED_PERSON_LEAVING_POSITION = (700, 440)
 RULE_BOOK_BASICS_POSITION = (1500, 910)
 PASSPORT_RULE_POSITION = (1000, 850)
 INTERROGATE_POSITION = (500, 1230)
@@ -69,8 +71,7 @@ REJECTED_PASSPORT_POSITION = (1600, 950)
 
 
 Matching = "MATCHING"
-Date = ""
-City = ""
+os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = 'C:/Users/Divuff/Downloads/papers-please-382221-4f331df77b8e.json'
 
 
 # Functions
@@ -81,7 +82,6 @@ def get_image_color(position):
 
 def move_mouse(position):
     pyautogui.moveTo(position)
-    time.sleep(0.3)
 
 
 def click_mouse(position):
@@ -93,12 +93,14 @@ def drag_and_drop(start_position, end_position):
     move_mouse(start_position)
     pyautogui.mouseDown(button='left')
     move_mouse(end_position)
+    time.sleep(0.3)
     pyautogui.mouseUp(button='left')
 
 
 def approve_passport():
     print("WELCOME!")
     click_mouse(STAMP_TRAY_POSITION)
+    time.sleep(0.3)
     click_mouse(APPROVAL_STAMP_POSITION)
     drag_and_drop(PASSPORT_SLOT_POSITION, DOCUMENT_DROP_POSITION)
 
@@ -107,18 +109,23 @@ def reject_passport():
     print("FOREIGN SCUM")
     click_mouse(STAMP_TRAY_POSITION)
     drag_and_drop(PASSPORT_SLOT_POSITION, REJECTED_PASSPORT_POSITION)
+    time.sleep(0.3)
     click_mouse(REJECTED_STAMP_POSITION)
     drag_and_drop(REJECTED_PASSPORT_POSITION, DOCUMENT_DROP_POSITION)
 
 
 def reset_person():
-    global PersonPresent, PassportPresent, Arstotzkan, StampingTime, NoPassport, NextPerson
+    global PersonPresent, PassportPresent, Arstotzkan, StampingTime, NoPassport, NextPerson, CorrectCity, CorrectDate, PersonGenderMatch, PhotoPersonMatch
     PersonPresent = False
     PassportPresent = False
     Arstotzkan = False
     StampingTime = False
     NoPassport = False
     NextPerson = False
+    CorrectDate = False
+    CorrectCity = False
+    PersonGenderMatch = False
+    PhotoPersonMatch = False
 
 
 def inspection(first_inspect_item_location, second_inspect_item_location):
@@ -132,19 +139,35 @@ def move_intrusive_object():
 
 
 def textdetect(inspect_position):
-    # Path of tesseract executable
+    # Initialize the Google Vision client
+    client = vision.ImageAnnotatorClient()
     time.sleep(2)
-    pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
-    # Converted the image to monochrome for it to be easily
-    # read by the OCR and obtained the output String.
-    text = pytesseract.image_to_string(
-        cv2.cvtColor(nm.array(ImageGrab.grab(bbox=inspect_position)), cv2.COLOR_BGR2GRAY),
-        lang='eng')
+    # Convert the image to grayscale and save it as a temporary file
+    image = np.array(ImageGrab.grab(bbox=inspect_position))
+    gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    temp_image_path = 'temp_image.png'
+    cv2.imwrite(temp_image_path, gray_image)
 
+    # Read the temporary image file and send it to Google Vision API
+    with open(temp_image_path, 'rb') as image_file:
+        content = image_file.read()
+        image = vision.Image(content=content)
+        response = client.text_detection(image=image)
+
+    # Extract the text from the response
+    text = response.text_annotations[0].description if response.text_annotations else ''
     text = text.strip()
+
+
     print(text)
-    if Levenshtein.ratio(text, Matching) >= 0.75:
+
+    if Matching in text:
+        text = "MATCHING"
+        print(text)
+
+
+    if ratio(text, Matching) >= 0.75:
         return True
     else:
         return False
@@ -159,6 +182,17 @@ matching_country = ()
 person_leaving_area = ()
 
 while get_image_color(DAY_TEST_POSITION) == DAY_COLOR:
+    # Person Leaving Booth Check
+
+    # Person Leaving Booth Check
+    if person_leaving_area == PERSON_COLOR:
+        NextPerson = True
+        person_leaving_area = ()
+        click_mouse(SPEAKER_POSITION)
+        print("Ready for Next Person")
+    else:
+        NextPerson = False
+
     # Check if person is present
     person_area = get_image_color(PERSON_POSITION)
     if person_area != WALL_COLOR:
@@ -187,7 +221,7 @@ while get_image_color(DAY_TEST_POSITION) == DAY_COLOR:
             print("No Passport!")
 
     country = get_image_color(PASSPORT_BORDER_POSITION)
-    print(country)
+
 
     if PersonPresent and PassportPresent:
         # Define a dictionary to store the values for each country
@@ -242,7 +276,7 @@ while get_image_color(DAY_TEST_POSITION) == DAY_COLOR:
                 "GENDER_POSITION": (2128, 1054),
                 "COUNTRY_POSITION": (1190, 1270),
 
-                "DATE_INSPECT_POSITION": (1075, 1170, 1295, 1250),
+                "DATE_INSPECT_POSITION": (1075, 1165, 1295, 1250),
                 "CITY_INSPECT_POSITION": (1720, 1065, 1930, 1155),
                 "PHOTO_GENDER_INSPECT_POSITION": (1810, 780, 2030, 870),
                 "PERSON_GENDER_INSPECT_POSITION": (1260, 860, 1495, 950),
@@ -340,37 +374,59 @@ while get_image_color(DAY_TEST_POSITION) == DAY_COLOR:
         click_mouse(BOOKMARK_POSITION)
         drag_and_drop(RULE_BOOK_SLOT_POSITION, RULE_BOOK_POSITION)
 
-    if CorrectCity:
-        inspection(DATE_POSITION, CLOCK_POSITION)
-        CorrectDate = textdetect(DATE_INSPECT_POSITION)
+        if CorrectCity:
+            inspection(DATE_POSITION, CLOCK_POSITION)
+            CorrectDate = textdetect(DATE_INSPECT_POSITION)
+            if CorrectDate:
+                print("Valid Date!")
+            else:
+                print("Passport Out Of Date!")
+
+            click_mouse(INSPECT_BUTTON_POSITION)
+
         if CorrectDate:
-            print("Valid Date!")
-        else:
-            print("Passport Out Of Date!")
+            inspection(GENDER_POSITION, PERSON_POSITION)
+            PersonGenderMatch = textdetect(PERSON_GENDER_INSPECT_POSITION)
+            if PersonGenderMatch:
+                print("Valid Gender!")
+            else:
+                print("InValid Gender!")
 
-        click_mouse(INSPECT_BUTTON_POSITION)
+            click_mouse(INSPECT_BUTTON_POSITION)
 
-    if CorrectDate:
-        inspection(GENDER_POSITION, PERSON_POSITION)
-        PersonGenderMatch = textdetect(PERSON_GENDER_INSPECT_POSITION)
         if PersonGenderMatch:
-            print("Valid Gender!")
-        else:
-            print("InValid Gender!")
+            inspection(PHOTO_POSITION, PERSON_POSITION)
+            PhotoPersonMatch = textdetect(PHOTO_PERSON_INSPECT_POSITION)
+            if PhotoPersonMatch:
+                print("Valid Photo!")
+            else:
+                print("InValid Photo!")
 
-        click_mouse(INSPECT_BUTTON_POSITION)
+            click_mouse(INSPECT_BUTTON_POSITION)
 
-    if PersonGenderMatch:
-        inspection(PHOTO_POSITION, PERSON_POSITION)
-        PhotoPersonMatch = textdetect(PHOTO_PERSON_INSPECT_POSITION)
         if PhotoPersonMatch:
-            print("Valid Photo!")
+            print("VALID PASSPORT!")
+            approve_passport()
+            reset_person()
+
+            while person_leaving_area != PERSON_COLOR:
+                person_leaving_area = get_image_color(ACCEPTED_PERSON_LEAVING_POSITION)
+
+
+        elif NoPassport:
+            print("NO PASSPORT")
+
+            reset_person()
+
+            while person_leaving_area != PERSON_COLOR:
+                person_leaving_area = get_image_color(REJECTED_PERSON_LEAVING_POSITION)
+
+
         else:
-            print("InValid Photo!")
+            print("INVALID PASSPORT")
+            reset_person()
+            reject_passport()
 
-        click_mouse(INSPECT_BUTTON_POSITION)
+            while person_leaving_area != PERSON_COLOR:
+                person_leaving_area = get_image_color(REJECTED_PERSON_LEAVING_POSITION)
 
-    if PhotoPersonMatch:
-        print("VALID PASSPORT!")
-    else:
-        print("INVALID PASSPORT")

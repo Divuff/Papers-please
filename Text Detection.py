@@ -1,44 +1,51 @@
-# cv2.cvtColor takes a numpy ndarray as an argument
+import os
 import time
-
-import numpy as nm
-import pyautogui
-import pytesseract
-import Levenshtein
-
-# importing OpenCV
 import cv2
-
+import numpy as np
 from PIL import ImageGrab
+from google.cloud import vision
+from Levenshtein import ratio
 
 Matching = "MATCHING"
 Text = ""
 
-TicketDateInspectTopX = 660
-TicketDateInspectBottomX = 950
-TicketDateInspectTopY = 850
-TicketDateInspectBottomY = 1100
+CITY_INSPECT_POSITION = (1720, 1065, 1930, 1155)
+os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = 'C:/Users/Divuff/Downloads/papers-please-382221-4f331df77b8e.json'
 
 
+def textdetect(inspect_position):
+    # Initialize the Google Vision client
+    client = vision.ImageAnnotatorClient()
+    time.sleep(2)
 
-# Path of tesseract executable
-time.sleep(2)
-pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+    # Convert the image to grayscale and save it as a temporary file
+    image = np.array(ImageGrab.grab(bbox=inspect_position))
+    gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    temp_image_path = 'temp_image.png'
+    cv2.imwrite(temp_image_path, gray_image)
 
-cap = ImageGrab.grab(bbox=(TicketDateInspectTopX, TicketDateInspectTopY, TicketDateInspectBottomX, TicketDateInspectBottomY))
+    # Read the temporary image file and send it to Google Vision API
+    with open(temp_image_path, 'rb') as image_file:
+        content = image_file.read()
+        image = vision.Image(content=content)
+        response = client.text_detection(image=image)
 
-# Converted the image to monochrome for it to be easily
-# read by the OCR and obtained the output String.
-Text = pytesseract.image_to_string(
-    cv2.cvtColor(nm.array(cap), cv2.COLOR_BGR2GRAY),
-    lang='eng')
+    # Extract the text from the response
+    text = response.text_annotations[0].description if response.text_annotations else ''
+    text = text.strip()
+    print(text)
 
+    if ratio(text, Matching) >= 0.75:
+        return True
+    else:
+        return False
 
-Text = Text.strip()
-print(Text)
+    # Delete the temporary PNG file
+    os.remove(temp_image_path)
 
-similarity_ratio = Levenshtein.ratio(Text, Matching)
-if similarity_ratio >= 0.75:
-    print("The strings are similar")
+# Validate Issuing City
+CorrectCity = textdetect(CITY_INSPECT_POSITION)
+if CorrectCity:
+    print("Valid issuing city!")
 else:
-    print("The strings are not similar")
+    print("Invalid issuing city!")

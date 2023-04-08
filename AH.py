@@ -1,4 +1,26 @@
-variables = {
+
+old_resolution = (2275, 1278)
+new_resolution = (2560, 1440)
+
+
+def update_coordinates_v5(old_coord, old_resolution, new_resolution):
+    old_x, old_y = old_coord
+    old_width, old_height = old_resolution
+    new_width, new_height = new_resolution
+
+    half_old_width, half_old_height = old_width / 2, old_height / 2
+    half_new_width, half_new_height = new_width / 2, new_height / 2
+
+    x_scale = half_new_width / half_old_width
+    y_scale = half_new_height / half_old_height
+
+    new_x = half_new_width + (old_x - half_old_width) * x_scale
+    new_y = half_new_height + (old_y - half_old_height) * y_scale
+
+    return (int(new_x), int(new_y))
+
+
+old_coordinates = {
     'TEXT_BOX_POSITION': (140, 535),
     'PASSPORT_SIDE_POSITION': (175, 1085),
     'CLOCK_POSITION': (200, 1320),
@@ -20,7 +42,6 @@ variables = {
     'RULE_BOOK_BASICS_POSITION': (1500, 910),
     'REGIONAL_MAP_POSITION': (1510, 970),
     'REJECTED_STAMP_POSITION': (1600, 695),
-    'REJECTED_PASSPORT_POSITION': (1600, 950),
     'PASSPORT_BORDER_POSITION': (1845, 950),
     'PASSPORT_SLOT_POSITION': (2100, 950),
     'APPROVAL_STAMP_POSITION': (2100, 730),
@@ -29,33 +50,10 @@ variables = {
     'STAMP_TRAY_POSITION': (2400, 730)
 }
 
+new_coordinates = {}
+for name, old_coord in old_coordinates.items():
+    new_coordinates[name] = update_coordinates_v5(old_coord, old_resolution, new_resolution)
 
-def update_position(position):
-    x, y = position
-
-    if x < 1280:
-        x -= 45
-    else:
-        x += 125
-
-    x_scale_factor = 1
-    y_scale_factor = 1
-
-    if y != 720:
-        if y == 1320:
-            y_scale_factor = 1440 / 1320
-        elif y == 950:
-            y_scale_factor = 1070 / 950
-        elif y == 370:
-            y_scale_factor = 345 / 370
-
-    y = int(y * y_scale_factor)
-
-    return (x, y)
-
-
-updated_variables = {key: update_position(value) for key, value in variables.items()}
-
-print("Updated variables:")
-for key, value in updated_variables.items():
-    print(f"{key}: {value}")
+# Print the updated coordinates
+for name, new_coord in new_coordinates.items():
+    print(f"{name}: {new_coord}")
