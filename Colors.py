@@ -14,6 +14,8 @@ DESK_COLOR = (25, 18, 18)
 WALL_COLOR = (50, 37, 37)
 
 
+
+
 # ONSCREEN MOVING
 TEXTBOX_COLOR = (237, 224, 216)
 PERSON_COLOR = (27, 27, 27)
@@ -22,5 +24,5 @@ PERSON_COLOR = (27, 27, 27)
 LadyCard = (60, 38, 92)
 LadyCardSecondary = (255, 106, 106)
 
-TicketColor = (180, 169, 151)
-TicketColor2 = (224, 233, 199)
+TICKETCOLOR = (180, 169, 151)
+TICKETCOLOR2 = (224, 233, 199)

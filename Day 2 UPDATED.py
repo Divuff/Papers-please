@@ -3,7 +3,6 @@ import time
 import cv2
 import pyautogui
 from PIL import ImageGrab
-import pytesseract
 import os
 import numpy as np
 from google.cloud import vision
