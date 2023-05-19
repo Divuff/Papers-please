@@ -1,5 +1,5 @@
 import time
-import pydirectinput
+
 import pyautogui
 from PIL import ImageGrab
 

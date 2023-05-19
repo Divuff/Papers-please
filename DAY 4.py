@@ -3,16 +3,15 @@ import time
 import cv2
 import pyautogui
 from PIL import ImageGrab
-import pytesseract
 import os
 import numpy as np
 from google.cloud import vision
 from Levenshtein import ratio
 from datetime import datetime
 
-from Colors import ARSTOTZKA_COLOR, PERSON_COLOR, TEXTBOX_COLOR, DAY_COLOR, DOCUMENT_AREA_COLOR, DESK_COLOR, WALL_COLOR, \
+from Colors import ARSTOTZKA_COLOR, PERSON_COLOR, TEXTBOX_COLOR, DAY_COLOR, DOCUMENT_AREA_COLOR, WALL_COLOR, \
     ANTEGRIA_COLOR, OBRISTAN_COLOR, UNITEDFED_COLOR, REPUBLIA_COLOR, IMPOR_COLOR, KOLECHIA_COLOR, LadyCard, \
-    LadyCardSecondary, TICKETCOLOR, TICKETCOLOR2
+    LadyCardSecondary,
 
 # Logic Variables
 PersonPresent = False
@@ -196,6 +195,10 @@ def reset_person():
     ValidIDCardPhoto = False
     NoEntryPermit = False
     Foreigner = False
+
+
+def return_documents(documentpos):
+    drag_and_drop(documentpos, DOCUMENT_DROP_POSITION)
 
 
 def inspection(first_inspect_item_location, second_inspect_item_location):
@@ -465,7 +468,6 @@ while get_image_color(DAY_TEST_POSITION) == DAY_COLOR:
         elif Foreigner:
             NoEntryPermit = True
 
-
     if NoPassport:
         DocumentStatus = lack_of_document("Passport")
         click_mouse(BOOKMARK_POSITION)
@@ -479,7 +481,7 @@ while get_image_color(DAY_TEST_POSITION) == DAY_COLOR:
             PassportPresent = False
             StampingTime = True
 
-    if NoIDCard:
+    elif NoIDCard:
         DocumentStatus = lack_of_document("IDCard")
         click_mouse(BOOKMARK_POSITION)
 
@@ -492,7 +494,7 @@ while get_image_color(DAY_TEST_POSITION) == DAY_COLOR:
             IDCardPresent = False
             StampingTime = True
 
-    if NoEntryPermit:
+    elif NoEntryPermit:
         DocumentStatus = lack_of_document("EntryPermit")
         click_mouse(BOOKMARK_POSITION)
 
@@ -507,104 +509,89 @@ while get_image_color(DAY_TEST_POSITION) == DAY_COLOR:
 
     country = get_image_color(PASSPORT_BORDER_POSITION)
 
-
     if PersonPresent and PassportPresent:
         # Define a dictionary to store the values for each country
         country_dict = {
             ARSTOTZKA_COLOR: {
                 "name": "Arstotzka",
-                "DATE_POSITION": (2175, 1120),
                 "PHOTO_POSITION": (1920, 1120),
-                "CITY_POSITION": (2150, 1090),
                 "GENDER_POSITION": (2128, 1060),
                 "COUNTRY_POSITION": (1650, 1080),
 
-                "DATE_INSPECT_POSITION": (1070, 1165, 1295, 1255),
-                "CITY_INSPECT_POSITION": (1740, 1070, 1965, 1160),
+                "DATE_POSITION": (2035, 1111, 2288, 1140),
+                "CITY_POSITION": (2108, 1078, 2321, 1106),
                 "PHOTO_GENDER_INSPECT_POSITION": (1810, 780, 2020, 870),
                 "PERSON_GENDER_INSPECT_POSITION": (1260, 865, 1490, 955),
                 "PHOTO_PERSON_INSPECT_POSITION": (1145, 880, 1360, 970)
             },
             ANTEGRIA_COLOR: {
                 "name": "Antegria",
-                "DATE_POSITION": (2020, 1145),
                 "PHOTO_POSITION": (2255, 1083),
-                "CITY_POSITION": (1987, 1112),
                 "GENDER_POSITION": (1947, 1073),
                 "COUNTRY_POSITION": (1033, 952),
 
-                "DATE_INSPECT_POSITION": (960, 1170, 1240, 1290),
-                "CITY_INSPECT_POSITION": (1660, 1080, 1870, 1170),
+                "DATE_POSITION": (1935, 1137, 2115, 1162),
+                "CITY_POSITION": (1935, 1097, 2170, 1127),
                 "PHOTO_GENDER_INSPECT_POSITION": (1870, 745, 2085, 825),
                 "PERSON_GENDER_INSPECT_POSITION": (1180, 870, 1400, 955),
                 "PHOTO_PERSON_INSPECT_POSITION": (1300, 865, 1520, 985)
             },
             OBRISTAN_COLOR: {
                 "name": "Obristan",
-                "DATE_POSITION": (2020, 1165),
                 "PHOTO_POSITION": (2250, 1150),
-                "CITY_POSITION": (1975, 1145),
                 "GENDER_POSITION": (1958, 1111),
                 "COUNTRY_POSITION": (1150, 780),
 
-                "DATE_INSPECT_POSITION": (995, 1195, 1210, 1280),
-                "CITY_INSPECT_POSITION": (1640, 1090, 1850, 1170),
+                "DATE_POSITION": (1945, 1163, 2125, 1190),
+                "CITY_POSITION": (1945, 1130, 2130, 1165),
                 "PHOTO_GENDER_INSPECT_POSITION": (1870, 825, 2100, 900),
                 "PERSON_GENDER_INSPECT_POSITION": (1185, 890, 1400, 970),
                 "PHOTO_PERSON_INSPECT_POSITION": (1300, 900, 1510, 1002)
             },
             IMPOR_COLOR: {
                 "name": "Impor",
-                "DATE_POSITION": (2175, 1120),
                 "PHOTO_POSITION": (1920, 1150),
-                "CITY_POSITION": (2165, 1088),
                 "GENDER_POSITION": (2128, 1054),
                 "COUNTRY_POSITION": (1190, 1270),
 
-                "DATE_INSPECT_POSITION": (1075, 1165, 1295, 1250),
-                "CITY_INSPECT_POSITION": (1720, 1065, 1930, 1155),
+                "DATE_POSITION": (2115, 1108, 2325, 1136),
+                "CITY_POSITION": (2115, 1075, 2325, 1105),
                 "PHOTO_GENDER_INSPECT_POSITION": (1810, 780, 2030, 870),
                 "PERSON_GENDER_INSPECT_POSITION": (1260, 860, 1495, 950),
                 "PHOTO_PERSON_INSPECT_POSITION": (1150, 880, 1370, 970)
             },
             KOLECHIA_COLOR: {
                 "name": "Kolechia",
-                "DATE_POSITION": (2175, 1150),
                 "PHOTO_POSITION": (1920, 1150),
-                "CITY_POSITION": (2150, 1130),
                 "GENDER_POSITION": (2128, 1095),
                 "COUNTRY_POSITION": (1450, 810),
 
-                "DATE_INSPECT_POSITION": (1075, 1190, 1295, 1270),
-                "CITY_INSPECT_POSITION": (1740, 1085, 1950, 1175),
+                "DATE_POSITION": (2115, 1145, 2300, 1178),
+                "CITY_POSITION": (2115, 1115, 2330, 1143),
                 "PHOTO_GENDER_INSPECT_POSITION": (1810, 815, 2020, 910),
                 "PERSON_GENDER_INSPECT_POSITION": (1260, 875, 1495, 969),
                 "PHOTO_PERSON_INSPECT_POSITION": (1150, 910, 1370, 992)
             },
             UNITEDFED_COLOR: {
                 "name": "UnitedFed",
-                "DATE_POSITION": (2175, 1150),
                 "PHOTO_POSITION": (1920, 1150),
-                "CITY_POSITION": (2150, 1130),
                 "GENDER_POSITION": (2128, 1095),
                 "COUNTRY_POSITION": (900, 1220),
 
-                "DATE_INSPECT_POSITION": (1075, 1180, 1295, 1270),
-                "CITY_INSPECT_POSITION": (1720, 1075, 1950, 1195),
+                "DATE_POSITION": (2115, 1144, 2300, 1170),
+                "CITY_POSITION": (2115, 1111, 2315, 1143),
                 "PHOTO_GENDER_INSPECT_POSITION": (1810, 825, 2020, 900),
                 "PERSON_GENDER_INSPECT_POSITION": (1260, 875, 1495, 969),
                 "PHOTO_PERSON_INSPECT_POSITION": (1150, 900, 1400, 1000)
             },
             REPUBLIA_COLOR: {
                 "name": "Republia",
-                "DATE_POSITION": (2000, 1120),
                 "PHOTO_POSITION": (2250, 1110),
-                "CITY_POSITION": (1980, 1085),
                 "GENDER_POSITION": (1962, 1055),
                 "COUNTRY_POSITION": (1100, 1120),
 
-                "DATE_INSPECT_POSITION": (995, 1165, 1212, 1270),
-                "CITY_INSPECT_POSITION": (1650, 1070, 1860, 1150),
+                "DATE_POSITION": (1945, 1110, 2125, 1140),
+                "CITY_POSITION": (1945, 1080, 2155, 1105),
                 "PHOTO_GENDER_INSPECT_POSITION": (1875, 770, 2100, 850),
                 "PERSON_GENDER_INSPECT_POSITION": (1185, 860, 1410, 950),
                 "PHOTO_PERSON_INSPECT_POSITION": (1300, 880, 1520, 970)
@@ -626,92 +613,107 @@ while get_image_color(DAY_TEST_POSITION) == DAY_COLOR:
                 CITY_POSITION = country_dict[color]["CITY_POSITION"]
                 GENDER_POSITION = country_dict[color]["GENDER_POSITION"]
                 COUNTRY_POSITION = country_dict[color]["COUNTRY_POSITION"]
-                DATE_INSPECT_POSITION = country_dict[color]["DATE_INSPECT_POSITION"]
-                CITY_INSPECT_POSITION = country_dict[color]["CITY_INSPECT_POSITION"]
                 PHOTO_GENDER_INSPECT_POSITION = country_dict[color]["PHOTO_GENDER_INSPECT_POSITION"]
                 PERSON_GENDER_INSPECT_POSITION = country_dict[color]["PERSON_GENDER_INSPECT_POSITION"]
                 PHOTO_PERSON_INSPECT_POSITION = country_dict[color]["PHOTO_PERSON_INSPECT_POSITION"]
-                StampingTime = True
-                break
+                PASSPORT_NAME_POSITION = country_dict[color]["PASSPORT_NAME_POSITION"]
+
+                if name != "Arstotzka":
+                    PASSPORT_ID_POSITION = country_dict[color]["PASSPORT_NAME_POSITION"]
+                else:
+                    PASSPORT_ID_POSITION = None
 
         # Print the values of the variables for the matching country
         print(f"{name}!")
 
     if StampingTime:
-        # MOVE RULE
-        drag_and_drop(RULE_BOOK_POSITION, RULE_BOOK_SLOT_POSITION)
 
-        # CHECK CITY
-        click_mouse(REGIONAL_MAP_POSITION)
-        click_mouse(COUNTRY_POSITION)
-        inspection(CITY_POSITION, ISSUING_CITIES_POSITION)
+        if TicketPresent:
+            ValidTicket = on_date_check(TICKET_DATE_POSITION, Date)
+
+        if ValidTicket or Arstotzkan:
+            # MOVE RULE
+            drag_and_drop(RULE_BOOK_POSITION, RULE_BOOK_SLOT_POSITION)
+
+            # CHECK CITY
+            click_mouse(REGIONAL_MAP_POSITION)
+            click_mouse(COUNTRY_POSITION)
+
+            print("Valid Ticket")
+            CorrectCity = compare_city(CITY_POSITION, ISSUING_CITY_POS)
+            click_mouse(BOOKMARK_POSITION)
+            drag_and_drop(RULE_BOOK_SLOT_POSITION, RULE_BOOK_POSITION)
 
         # Validate Issuing City
-        CorrectCity = textdetect(CITY_INSPECT_POSITION)
         if CorrectCity:
             print("Valid issuing city!")
+            CorrectDate = up_to_date_check(DATE_POSITION, Date)
         else:
             print("Invalid issuing city!")
 
-        click_mouse(INSPECT_BUTTON_POSITION)
-
-        # MOVE RULE BOOK BACK
-        click_mouse(BOOKMARK_POSITION)
-        drag_and_drop(RULE_BOOK_SLOT_POSITION, RULE_BOOK_POSITION)
-
-        if CorrectCity:
-            inspection(DATE_POSITION, CLOCK_POSITION)
-            CorrectDate = textdetect(DATE_INSPECT_POSITION)
-            if CorrectDate:
-                print("Valid Date!")
-            else:
-                print("Passport Out Of Date!")
-
-            click_mouse(INSPECT_BUTTON_POSITION)
-
         if CorrectDate:
             inspection(GENDER_POSITION, PERSON_POSITION)
-            PersonGenderMatch = textdetect(PERSON_GENDER_INSPECT_POSITION)
-            if PersonGenderMatch:
-                print("Valid Gender!")
-            else:
-                print("InValid Gender!")
-
-            click_mouse(INSPECT_BUTTON_POSITION)
+            PersonGenderMatch = inspect_detect(PERSON_GENDER_INSPECT_POSITION)
+            print("Valid Date!")
+        else:
+            print("Passport Out Of Date!")
 
         if PersonGenderMatch:
             inspection(PHOTO_POSITION, PERSON_POSITION)
-            PhotoPersonMatch = textdetect(PHOTO_PERSON_INSPECT_POSITION)
-            if PhotoPersonMatch:
-                print("Valid Photo!")
-            else:
-                print("InValid Photo!")
-
-            click_mouse(INSPECT_BUTTON_POSITION)
+            PhotoPersonMatch = inspect_detect(PHOTO_PERSON_INSPECT_POSITION)
+            print("Valid Gender!")
+        else:
+            print("InValid Gender!")
 
         if PhotoPersonMatch:
             print("VALID PASSPORT!")
             approve_passport()
             reset_person()
 
+            return_documents(SECONDARY_DOCUMENT_SLOT_POSITION)
+
             while person_leaving_area != PERSON_COLOR:
                 person_leaving_area = get_image_color(ACCEPTED_PERSON_LEAVING_POSITION)
 
+        elif NoPassport and NoTicket:
+            print("NO DOCUMENTS")
+            reset_person()
+
+            while person_leaving_area != PERSON_COLOR:
+                person_leaving_area = get_image_color(REJECTED_PERSON_LEAVING_POSITION)
 
         elif NoPassport:
             print("NO PASSPORT")
 
             reset_person()
+            return_documents(SECONDARY_DOCUMENT_SLOT_POSITION)
 
             while person_leaving_area != PERSON_COLOR:
                 person_leaving_area = get_image_color(REJECTED_PERSON_LEAVING_POSITION)
 
+        elif NoTicket:
+            print("NO TICKET")
+
+            reject_passport()
+            reset_person()
+
+            while person_leaving_area != PERSON_COLOR:
+                person_leaving_area = get_image_color(REJECTED_PERSON_LEAVING_POSITION)
+
+        elif not ValidTicket:
+            print("INVALID TICKET")
+            reject_passport()
+            return_documents(SECONDARY_DOCUMENT_SLOT_POSITION)
+            reset_person()
+
+            while person_leaving_area != PERSON_COLOR:
+                person_leaving_area = get_image_color(REJECTED_PERSON_LEAVING_POSITION)
 
         else:
             print("INVALID PASSPORT")
-            reset_person()
             reject_passport()
+            return_documents(SECONDARY_DOCUMENT_SLOT_POSITION)
+            reset_person()
 
             while person_leaving_area != PERSON_COLOR:
                 person_leaving_area = get_image_color(REJECTED_PERSON_LEAVING_POSITION)
-
