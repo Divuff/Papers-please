@@ -12,14 +12,14 @@ from google.cloud import vision
 
 import Logic
 from Colors import TEXTBOX_COLOR, DOCUMENT_AREA_COLOR, LadyCard, \
-    LadyCardSecondary, TICKETCOLOR, TICKETCOLOR2
+    LadyCardSecondary, TICKET_COLOR, TICKET_COLOR2
 
-from Positions import STAMP_TRAY_POSITION, APPROVAL_STAMP_POSITION, PASSPORT_SLOT_POSITION, DOCUMENT_DROP_POSITION, \
-    REJECTED_PASSPORT_POSITION, REJECTED_STAMP_POSITION, \
-    INSPECT_BUTTON_POSITION, PASSPORT_POSITION, PASSPORT_SIDE_POSITION, REGIONAL_MAP_POSITION, \
-    RULE_BOOK_POSITION, RULE_BOOK_SLOT_POSITION, RULE_BOOK_BASICS_POSITION, \
-    PASSPORT_RULE_POSITION, INTERROGATE_POSITION, REPLY_TEXT_BOX_POSITION, TICKET_RULE_POSITION, \
-    SECONDARY_DOCUMENT_POSITION, DOCUMENT_AREA_POSITION, SECONDARY_DOCUMENT_SLOT_POSITION
+from Pos import STAMP_TRAY_POS, APPROVAL_STAMP_POS, PASSPORT_SLOT_POS, DOCUMENT_DROP_POS, \
+    REJECTED_PASSPORT_POS, REJECTED_STAMP_POS, \
+    INSPECT_BUTTON_POS, PASSPORT_POS, PASSPORT_SIDE_POS, REGIONAL_MAP_POS, \
+    RULE_BOOK_POS, RULE_BOOK_SLOT_POS, RULE_BOOK_BASICS_POS, \
+    PASSPORT_RULE_POS, INTERROGATE_POS, REPLY_TEXT_BOX_POS, TICKET_RULE_POS, \
+    SECONDARY_DOCUMENT_POS, DOCUMENT_AREA_POS, SECONDARY_DOCUMENT_SLOT_POS
 
 Matching = "MATCHING"
 
@@ -54,17 +54,17 @@ def drag_and_drop(start_position, end_position):
 def process_passport(passport_status):
     if passport_status == "Approved":
         print("WELCOME!")
-        click_mouse(STAMP_TRAY_POSITION)
+        click_mouse(STAMP_TRAY_POS)
         time.sleep(0.3)
-        click_mouse(APPROVAL_STAMP_POSITION)
-        drag_and_drop(PASSPORT_SLOT_POSITION, DOCUMENT_DROP_POSITION)
+        click_mouse(APPROVAL_STAMP_POS)
+        drag_and_drop(PASSPORT_SLOT_POS, DOCUMENT_DROP_POS)
 
     if passport_status == "Rejected":
-        click_mouse(STAMP_TRAY_POSITION)
-        drag_and_drop(PASSPORT_SLOT_POSITION, REJECTED_PASSPORT_POSITION)
+        click_mouse(STAMP_TRAY_POS)
+        drag_and_drop(PASSPORT_SLOT_POS, REJECTED_PASSPORT_POS)
         time.sleep(0.3)
-        click_mouse(REJECTED_STAMP_POSITION)
-        drag_and_drop(REJECTED_PASSPORT_POSITION, DOCUMENT_DROP_POSITION)
+        click_mouse(REJECTED_STAMP_POS)
+        drag_and_drop(REJECTED_PASSPORT_POS, DOCUMENT_DROP_POS)
 
 
 def reset_person():
@@ -86,17 +86,17 @@ def reset_person():
 
 
 def return_documents(documentpos):
-    drag_and_drop(documentpos, DOCUMENT_DROP_POSITION)
+    drag_and_drop(documentpos, DOCUMENT_DROP_POS)
 
 
 def inspection(first_inspect_item_location, second_inspect_item_location):
-    click_mouse(INSPECT_BUTTON_POSITION)
+    click_mouse(INSPECT_BUTTON_POS)
     click_mouse(first_inspect_item_location)
     click_mouse(second_inspect_item_location)
 
 
 def move_intrusive_object():
-    drag_and_drop(PASSPORT_POSITION, PASSPORT_SIDE_POSITION)
+    drag_and_drop(PASSPORT_POS, PASSPORT_SIDE_POS)
 
 
 def textdetect(inspect_position):
@@ -124,7 +124,7 @@ def inspect_detect(inspect_position):
     text = text.strip()
 
     print(text)
-    click_mouse(INSPECT_BUTTON_POSITION)
+    click_mouse(INSPECT_BUTTON_POS)
     if Matching in text:
         text = "MATCHING"
         print(text)
@@ -205,8 +205,8 @@ def compare_text(inspect_position, inspect_position2):
 
 
 def compare_city(city_pos, issuing_city_pos):
-    click_mouse(REGIONAL_MAP_POSITION)
-    click_mouse(Logic.COUNTRY_POSITION)
+    click_mouse(REGIONAL_MAP_POS)
+    click_mouse(Logic.COUNTRY_POS)
 
     text = textdetect(city_pos)
     text2 = textdetect(issuing_city_pos)
@@ -220,17 +220,17 @@ def compare_city(city_pos, issuing_city_pos):
 def lack_of_document(document_type):
     texbox_area = ()
 
-    drag_and_drop(RULE_BOOK_POSITION, RULE_BOOK_SLOT_POSITION)
-    click_mouse(RULE_BOOK_BASICS_POSITION)
+    drag_and_drop(RULE_BOOK_POS, RULE_BOOK_SLOT_POS)
+    click_mouse(RULE_BOOK_BASICS_POS)
 
     if document_type == "Passport":
-        inspection(PASSPORT_RULE_POSITION, PASSPORT_POSITION)
+        inspection(PASSPORT_RULE_POS, PASSPORT_POS)
 
         time.sleep(1.5)
-        click_mouse(INTERROGATE_POSITION)
+        click_mouse(INTERROGATE_POS)
 
         while texbox_area != TEXTBOX_COLOR:
-            texbox_area = get_image_color(REPLY_TEXT_BOX_POSITION)
+            texbox_area = get_image_color(REPLY_TEXT_BOX_POS)
         else:
             time.sleep(1.5)
             document_status = passport_check()
@@ -238,13 +238,13 @@ def lack_of_document(document_type):
 
 
     elif document_type == "Ticket":
-        inspection(TICKET_RULE_POSITION, SECONDARY_DOCUMENT_POSITION)
+        inspection(TICKET_RULE_POS, SECONDARY_DOCUMENT_POS)
 
         time.sleep(1.5)
-        click_mouse(INTERROGATE_POSITION)
+        click_mouse(INTERROGATE_POS)
 
         while texbox_area != TEXTBOX_COLOR:
-            texbox_area = get_image_color(REPLY_TEXT_BOX_POSITION)
+            texbox_area = get_image_color(REPLY_TEXT_BOX_POS)
         else:
             time.sleep(2)
             document_status = ticket_check()
@@ -252,20 +252,20 @@ def lack_of_document(document_type):
 
 
 def passport_check():
-    area = get_image_color(DOCUMENT_AREA_POSITION)
-    if area != DOCUMENT_AREA_COLOR and area != TICKETCOLOR:
+    area = get_image_color(DOCUMENT_AREA_POS)
+    if area != DOCUMENT_AREA_COLOR and area != TICKET_COLOR:
         # MOVE PASSPORT TO SLOT
-        drag_and_drop(PASSPORT_POSITION, PASSPORT_SLOT_POSITION)
+        drag_and_drop(PASSPORT_POS, PASSPORT_SLOT_POS)
         return True
     else:
         return False
 
 
 def ticket_check():
-    area = get_image_color(DOCUMENT_AREA_POSITION)
+    area = get_image_color(DOCUMENT_AREA_POS)
     print(area)
-    if area == TICKETCOLOR or area == TICKETCOLOR2:
-        drag_and_drop(SECONDARY_DOCUMENT_POSITION, SECONDARY_DOCUMENT_SLOT_POSITION)
+    if area == TICKET_COLOR or area == TICKET_COLOR2:
+        drag_and_drop(SECONDARY_DOCUMENT_POS, SECONDARY_DOCUMENT_SLOT_POS)
 
         return True
 
@@ -284,9 +284,9 @@ def textbox_check(text_box_location):
 
 
 def lady_worker():
-    lady_stat = get_image_color(PASSPORT_POSITION)
+    lady_stat = get_image_color(PASSPORT_POS)
     if lady_stat == LadyCard or lady_stat == LadyCardSecondary:
-        drag_and_drop(PASSPORT_POSITION, PASSPORT_SIDE_POSITION)
+        drag_and_drop(PASSPORT_POS, PASSPORT_SIDE_POS)
         print("Lady Worker Card in the way!")
 
 
@@ -296,15 +296,16 @@ def set_country_positions(input_color):
         country_data = country_dict[input_color]
 
         Logic.NAME = country_data["name"]
-        Logic.PHOTO_POSITION = country_data["PHOTO_POSITION"]
-        Logic.GENDER_POSITION = country_data["GENDER_POSITION"]
-        Logic.COUNTRY_POSITION = country_data["COUNTRY_POSITION"]
-        Logic.CITY_POSITION = country_data["CITY_POSITION"]
-        Logic.DATE_POSITION = country_data["DATE_POSITION"]
-        Logic.PHOTO_PERSON_INSPECT_POSITION = country_data["PHOTO_PERSON_INSPECT_POSITION"]
-        Logic.PERSON_GENDER_INSPECT_POSITION = country_data["PERSON_GENDER_INSPECT_POSITION"]
+        Logic.PHOTO_POS = country_data["PHOTO_POS"]
+        Logic.GENDER_POS = country_data["GENDER_POS"]
+        Logic.COUNTRY_POS = country_data["COUNTRY_POS"]
+        Logic.CITY_POS = country_data["CITY_POS"]
+        Logic.DATE_POS = country_data["DATE_POS"]
+        Logic.PHOTO_PERSON_INSPECT_POS = country_data["PHOTO_PERSON_INSPECT_POS"]
+        Logic.PERSON_GENDER_INSPECT_POS = country_data["PERSON_GENDER_INSPECT_POS"]
 
         print(Logic.NAME)
+
 
 
 
