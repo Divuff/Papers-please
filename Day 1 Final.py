@@ -1,47 +1,41 @@
-import Logic
 from BackEndUpdate import *
-from Positions import LEVER_POSITION, SPEAKER_POSITION, DAY_TEST_POSITION, PERSON_POSITION, PRIMARY_TEXT_BOX_POSITION, \
-    PASSPORT_BORDER_POSITION, BOOKMARK_POSITION, \
-    TICKET_DATE_POSITION, RULE_BOOK_POSITION, RULE_BOOK_SLOT_POSITION, REGIONAL_MAP_POSITION, ISSUING_CITY_POS, \
-    SECONDARY_DOCUMENT_SLOT_POSITION, ACCEPTED_PERSON_LEAVING_POSITION, \
-    REJECTED_PERSON_LEAVING_POSITION
+from Colors import ARSTOTZKA_COLOR, TEXTBOX_COLOR, DAY_COLOR, DOCUMENT_AREA_COLOR, WALL_COLOR, TICKET_COLOR2, \
+    TICKET_COLOR
 
-from Colors import ARSTOTZKA_COLOR, PERSON_COLOR, TEXTBOX_COLOR, DAY_COLOR, DOCUMENT_AREA_COLOR, WALL_COLOR
+from Pos import positions
+import time
+import Logic
 
 # Main program
-click_mouse(LEVER_POSITION)
-click_mouse(SPEAKER_POSITION)
+click_mouse(positions['Lever_pos'])
+click_mouse(positions['Speaker_pos'])
 time.sleep(1)
 Person_Leaving_Area = ()
 country = ()
 
-while get_image_color(DAY_TEST_POSITION) == DAY_COLOR:
+while get_image_color(positions['Day_test_pos']) == DAY_COLOR:
 
     # Check for Person Leaving/Entering
-    if Person_Leaving_Area == PERSON_COLOR:
-        Logic.NextPerson = True
-        person_leaving_area = ()
-        click_mouse(SPEAKER_POSITION)
-        print("Ready for Next Person")
-    else:
+    if Logic.NextPerson:
         Logic.NextPerson = False
+        click_mouse(positions['Speaker_pos'])
+        print("Ready for Next Person")
 
     # Check if person is present
-    Logic.PersonPresent = get_image_color(PERSON_POSITION)
-    if Logic.PassportPresent:
-        Logic.PersonPresent = True
+    Logic.PersonPresent = not_compare_pos_color(positions['Person_pos'], WALL_COLOR)
+    if Logic.PersonPresent and not Logic.StampingTime:
+        time.sleep(1)
         print("Person Detected")
-    else:
-        Logic.PersonPresent = False
 
-    # Check if text box is present
-    Logic.TextBoxPresent = compare_pos_color(PRIMARY_TEXT_BOX_POSITION, TEXTBOX_COLOR)
+    Logic.TextBoxPresent = compare_pos_color(positions['Primary_text_box_pos'], TEXTBOX_COLOR)
     if Logic.TextBoxPresent and Logic.PersonPresent:
-
-        Logic.PassportPresent = triple_not_compare_pos_color(DOCUMENT_AREA_POSITION, DOCUMENT_AREA_COLOR, TICKET_COLOR, TICKET_COLOR2)
-
+        time.sleep(1.5)
+        Logic.PassportPresent = triple_not_compare_pos_color(positions['Document_area_pos'], DOCUMENT_AREA_COLOR,
+                                                             TICKET_COLOR,
+                                                             TICKET_COLOR2)
         if Logic.PassportPresent:
-            country = get_image_color(PASSPORT_BORDER_POSITION)
+            drag_and_drop(positions['Passport_pos'], positions['Passport_slot_pos'])
+            country = get_image_color(positions['Passport_border_pos'])
             print("Passport Detected")
         else:
             Logic.NoPassport = True
@@ -55,20 +49,30 @@ while get_image_color(DAY_TEST_POSITION) == DAY_COLOR:
             Logic.Arstotzkan = True
             print("Arstotzkan Detected")
 
+    if Logic.NoPassport:
+        Logic.DocumentStatus = lack_of_document("Passport")
+        click_mouse(positions['Bookmark_pos'])
+
+        if Logic.DocumentStatus:
+            Logic.NoPassport = False
+            Logic.PassportPresent = True
+            Logic.StampingTime = False
+        else:
+            Logic.PassportPresent = False
+            Logic.StampingTime = True
+
     if Logic.PersonPresent and Logic.PassportPresent:
-        StampingTime = True
+        Logic.StampingTime = True
 
     # APPROVAL STAMP
-    if StampingTime:
+    if Logic.StampingTime:
         if Logic.Arstotzkan:
-            print(process_passport("Approved"))
-
+            process_passport("Approved")
 
         # REJECTED STAMP
         elif Logic.Foreigner:
-            print(process_passport("Rejected"))
-
+            process_passport("Rejected")
 
         # NO PASSPORT
         if Logic.NoPassport:
-            print(process_passport("No_Passport"))
+            process_passport("No Passport")

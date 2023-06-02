@@ -1,58 +1,9 @@
-import time
 
-import pyautogui
-from PIL import ImageGrab
+from BackEndUpdate import *
 
-SPEAKER_POSITION = (830, 370)
-LEVER_POSITION = (850, 550)
-RULE_BOOK_SLOT_POSITION = (1300, 1050)
-RULE_BOOK_POSITION = (640, 1250)
-PASSPORT_POSITION = (475, 1085)
-PASSPORT_SLOT_POSITION = (2100, 950)
-REGIONAL_MAP_POSITION = (1510, 970)
-INSPECT_BUTTON_POSITION = (2350, 1320)
-ISSUING_CITIES_POSITION = (1400, 1120)
-PERSON_POSITION = (490, 850)
-DOCUMENT_DROP_POSITION = (480, 600)
-DAY_TEST_POSITION = (1444, 180)
-BOOKMARK_POSITION = (870, 750)
-CLOCK_POSITION = (200, 1320)
-ACCEPTED_PERSON_LEAVING_POSITION = (960, 450)
-REJECTED_PERSON_LEAVING_POSITION = (700, 450)
-RULE_BOOK_BASICS_POSITION = (1500, 910)
-PASSPORT_RULE_POSITION = (1000, 850)
-INTERROGATE_POSITION = (500, 1230)
-PASSPORT_BORDER_POSITION = (1845, 950)
-TEXT_BOX_POSITION = (140, 535)
-DOCUMENT_AREA_POSITION = (500, 1080)
-PASSPORT_SIDE_POSITION = (175, 1085)
-STAMP_TRAY_POSITION = (2400, 730)
-APPROVAL_STAMP_POSITION = (2100, 730)
-REJECTED_STAMP_POSITION = (1600, 695)
-APPROVED_PASSPORT_POSITION = (2100, 950)
-REJECTED_PASSPORT_POSITION = (1600, 950)
+import Pos
 
 
-def move_mouse(position):
-    pyautogui.moveTo(position)
+drag_and_drop(positions['Passport_pos'], positions['Passport_slot_pos'])
 
-
-
-def click_mouse(position):
-    move_mouse(position)
-    pyautogui.click()
-
-
-def drag_and_drop(start_position, end_position):
-    move_mouse(start_position)
-    pyautogui.mouseDown(button='left')
-    move_mouse(end_position)
-    time.sleep(0.3)
-    pyautogui.mouseUp(button='left')
-
-# MOVE PASSPORT
-
-drag_and_drop(PASSPORT_POSITION, PASSPORT_SLOT_POSITION)
-
-# MOVE RULE
-drag_and_drop(RULE_BOOK_POSITION, RULE_BOOK_SLOT_POSITION)
+drag_and_drop(positions['Secondary_document_pos'], positions['Secondary_document_slot_pos'])

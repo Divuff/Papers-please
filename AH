@@ -1,4 +1,62 @@
+def find_word_coordinates(word):
+    # Capture the screen image
+    image = np.array(ImageGrab.grab())
 
+    # Convert the image to grayscale and apply preprocessing
+    gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    enhanced_image = cv2.equalizeHist(gray_image)
+
+    # Save the enhanced image as a temporary file
+    temp_image_path = '../temp_image.png'
+    cv2.imwrite(temp_image_path, enhanced_image)
+
+    # Read the temporary image file and send it to Google Vision API
+    client = vision.ImageAnnotatorClient()
+    with open(temp_image_path, 'rb') as image_file:
+        content = image_file.read()
+        image = vision.Image(content=content)
+        response = client.text_detection(image=image, image_context={"language_hints": ["en"]})
+
+    # Extract the text annotations from the response
+    annotations = response.text_annotations
+
+    # Find the coordinates of the word in the annotations
+    coordinates = []
+    for annotation in annotations:
+        if word in annotation.description:
+            vertices = annotation.bounding_poly.vertices
+            top_left = (vertices[0].x, vertices[0].y)
+            bottom_right = (vertices[2].x, vertices[2].y)
+            coordinates.append(top_left + bottom_right)
+
+    # Print the coordinates
+    for i, coord in enumerate(coordinates):
+        print(f"{word}_pos_{i+1} = {coord}")
+
+def print_screen_text():
+    # Capture the screen image
+    image = np.array(ImageGrab.grab())
+
+    # Convert the image to grayscale
+    gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+    # Save the grayscale image as a temporary file
+    temp_image_path = '../temp_image.png'
+    cv2.imwrite(temp_image_path, gray_image)
+
+    # Read the temporary image file and send it to Google Vision API
+    client = vision.ImageAnnotatorClient()
+    with open(temp_image_path, 'rb') as image_file:
+        content = image_file.read()
+        image = vision.Image(content=content)
+        response = client.text_detection(image=image)
+
+    # Extract the text annotations from the response
+    annotations = response.text_annotations
+
+    # Print all the detected text
+    for annotation in annotations:
+        print(annotation.description)
 
 
 

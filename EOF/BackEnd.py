@@ -103,7 +103,7 @@ def textdetect(inspect_position):
     # Convert the image to grayscale and save it as a temporary file
     image = np.array(ImageGrab.grab(bbox=inspect_position))
     gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    temp_image_path = '../temp_image.png'
+    temp_image_path = '../../temp_image.png'
     cv2.imwrite(temp_image_path, gray_image)
 
     # Read the temporary image file and send it to Google Vision API

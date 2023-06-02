@@ -1,14 +1,10 @@
-import Logic
-from BackEnd import get_image_color, click_mouse, lady_worker, textbox_check, passport_check, ticket_check, \
-    lack_of_document, on_date_check, drag_and_drop, \
-    up_to_date_check, compare_city, inspection, inspect_detect, reset_person, return_documents, \
-    process_passport, set_country_positions
+from EOF.BackEnd import *
 from Colors import ARSTOTZKA_COLOR, PERSON_COLOR, DAY_COLOR, WALL_COLOR
-from Positions import LEVER_POSITION, SPEAKER_POSITION, DAY_TEST_POSITION, PERSON_POSITION, PRIMARY_TEXT_BOX_POSITION, \
-    PASSPORT_BORDER_POSITION, BOOKMARK_POSITION, \
-    TICKET_DATE_POSITION, RULE_BOOK_POSITION, RULE_BOOK_SLOT_POSITION, REGIONAL_MAP_POSITION, ISSUING_CITY_POS, \
-    SECONDARY_DOCUMENT_SLOT_POSITION, ACCEPTED_PERSON_LEAVING_POSITION, \
-    REJECTED_PERSON_LEAVING_POSITION
+from Pos import LEVER_POS, SPEAKER_POS, DAY_TEST_POS, PERSON_POS, Primary_text_box_pos, \
+    PASSPORT_BORDER_POS, BOOKMARK_POS, \
+    TICKET_DATE_POS, RULE_BOOK_POS, RULE_BOOK_SLOT_POS, REGIONAL_MAP_POS, ISSUING_CITY_POS, \
+    SECONDARY_DOCUMENT_SLOT_POS, ACCEPTED_PERSON_LEAVING_POS, \
+    REJECTED_PERSON_LEAVING_POS
 
 Date = "11-25-1982"
 
@@ -16,27 +12,27 @@ Date = "11-25-1982"
 
 
 # DaySTART
-click_mouse(LEVER_POSITION)
-click_mouse(SPEAKER_POSITION)
+click_mouse(LEVER_POS)
+click_mouse(SPEAKER_POS)
 
 name = ()
 matching_country = ()
 person_leaving_area = ()
 
-while get_image_color(DAY_TEST_POSITION) == DAY_COLOR:
+while get_image_color(DAY_TEST_POS) == DAY_COLOR:
     lady_worker()
 
     # Person Leaving Booth Check
     if person_leaving_area == PERSON_COLOR:
         Logic.NextPerson = True
         person_leaving_area = ()
-        click_mouse(SPEAKER_POSITION)
+        click_mouse(SPEAKER_POS)
         print("Ready for Next Person")
     else:
         Logic.NextPerson = False
 
     # Check if person is present
-    person_area = get_image_color(PERSON_POSITION)
+    person_area = get_image_color(PERSON_POS)
     if person_area != WALL_COLOR:
         if not Logic.PersonPresent:
             Logic.PersonPresent = True
@@ -45,11 +41,11 @@ while get_image_color(DAY_TEST_POSITION) == DAY_COLOR:
         Logic.PersonPresent = False
 
     # Check if text box is present
-    Logic.TextBoxPresent = textbox_check(PRIMARY_TEXT_BOX_POSITION)
+    Logic.TextBoxPresent = textbox_check(Primary_text_box_pos)
     if Logic.TextBoxPresent and Logic.PersonPresent:
 
         Logic.PassportPresent = passport_check()
-        country = get_image_color(PASSPORT_BORDER_POSITION)
+        country = get_image_color(PASSPORT_BORDER_POS)
 
         if country != ARSTOTZKA_COLOR:
             Logic.Arstotzkan = False
@@ -75,7 +71,7 @@ while get_image_color(DAY_TEST_POSITION) == DAY_COLOR:
 
     if Logic.NoPassport:
         Logic.DocumentStatus = lack_of_document("Passport")
-        click_mouse(BOOKMARK_POSITION)
+        click_mouse(BOOKMARK_POS)
 
         if Logic.DocumentStatus:
             Logic.NoPassport = False
@@ -87,7 +83,7 @@ while get_image_color(DAY_TEST_POSITION) == DAY_COLOR:
 
     elif Logic.NoTicket:
         Logic.DocumentStatus = lack_of_document("Ticket")
-        click_mouse(BOOKMARK_POSITION)
+        click_mouse(BOOKMARK_POS)
 
         if Logic.DocumentStatus:
             Logic.NoTicket = False
@@ -102,48 +98,48 @@ while get_image_color(DAY_TEST_POSITION) == DAY_COLOR:
         Logic.StampingTime = True
 
         # Example usage
-        country = get_image_color(PASSPORT_BORDER_POSITION)
+        country = get_image_color(PASSPORT_BORDER_POS)
         set_country_positions(country)
 
     if Logic.StampingTime:
 
         if Logic.TicketPresent:
-            Logic.ValidTicket = on_date_check(TICKET_DATE_POSITION, Date)
+            Logic.ValidTicket = on_date_check(TICKET_DATE_POS, Date)
 
         if Logic.ValidTicket or Logic.Arstotzkan:
             # MOVE RULE
-            drag_and_drop(RULE_BOOK_POSITION, RULE_BOOK_SLOT_POSITION)
+            drag_and_drop(RULE_BOOK_POS, RULE_BOOK_SLOT_POS)
 
             # CHECK CITY
-            click_mouse(REGIONAL_MAP_POSITION)
-            click_mouse(Logic.COUNTRY_POSITION)
+            click_mouse(REGIONAL_MAP_POS)
+            click_mouse(Logic.COUNTRY_POS)
 
             print("Valid Ticket")
 
-            print(Logic.CITY_POSITION)  # Should output a sequence with 2 or 4 elements
+            print(Logic.CITY_POS)  # Should output a sequence with 2 or 4 elements
             print(ISSUING_CITY_POS)  # Should output a sequence with 2 or 4 elements
 
-            Logic.CorrectCity = compare_city(Logic.CITY_POSITION, ISSUING_CITY_POS)
-            click_mouse(BOOKMARK_POSITION)
-            drag_and_drop(RULE_BOOK_SLOT_POSITION, RULE_BOOK_POSITION)
+            Logic.CorrectCity = compare_city(Logic.CITY_POS, ISSUING_CITY_POS)
+            click_mouse(BOOKMARK_POS)
+            drag_and_drop(RULE_BOOK_SLOT_POS, RULE_BOOK_POS)
 
         # Validate Issuing City
         if Logic.CorrectCity:
             print("Valid issuing city!")
-            Logic.CorrectDate = up_to_date_check(Logic.DATE_POSITION, Date)
+            Logic.CorrectDate = up_to_date_check(Logic.DATE_POS, Date)
         else:
             print("Invalid issuing city!")
 
         if Logic.CorrectDate:
-            inspection(Logic.GENDER_POSITION, PERSON_POSITION)
-            Logic.PersonGenderMatch = inspect_detect(Logic.PERSON_GENDER_INSPECT_POSITION)
+            inspection(Logic.GENDER_POS, PERSON_POS)
+            Logic.PersonGenderMatch = inspect_detect(Logic.PERSON_GENDER_INSPECT_POS)
             print("Valid Date!")
         else:
             print("Passport Out Of Date!")
 
         if Logic.PersonGenderMatch:
-            inspection(Logic.PHOTO_POSITION, PERSON_POSITION)
-            Logic.PhotoPersonMatch = inspect_detect(Logic.PHOTO_PERSON_INSPECT_POSITION)
+            inspection(Logic.PHOTO_POS, PERSON_POS)
+            Logic.PhotoPersonMatch = inspect_detect(Logic.PHOTO_PERSON_INSPECT_POS)
             print("Valid Gender!")
         else:
             print("InValid Gender!")
@@ -153,26 +149,26 @@ while get_image_color(DAY_TEST_POSITION) == DAY_COLOR:
             process_passport("Approved")
             reset_person()
 
-            return_documents(SECONDARY_DOCUMENT_SLOT_POSITION)
+            return_documents(SECONDARY_DOCUMENT_SLOT_POS)
 
             while person_leaving_area != PERSON_COLOR:
-                person_leaving_area = get_image_color(ACCEPTED_PERSON_LEAVING_POSITION)
+                person_leaving_area = get_image_color(ACCEPTED_PERSON_LEAVING_POS)
 
         elif Logic.NoPassport and Logic.NoTicket:
             print("NO DOCUMENTS")
             reset_person()
 
             while person_leaving_area != PERSON_COLOR:
-                person_leaving_area = get_image_color(REJECTED_PERSON_LEAVING_POSITION)
+                person_leaving_area = get_image_color(REJECTED_PERSON_LEAVING_POS)
 
         elif Logic.NoPassport:
             print("NO PASSPORT")
 
             reset_person()
-            return_documents(SECONDARY_DOCUMENT_SLOT_POSITION)
+            return_documents(SECONDARY_DOCUMENT_SLOT_POS)
 
             while person_leaving_area != PERSON_COLOR:
-                person_leaving_area = get_image_color(REJECTED_PERSON_LEAVING_POSITION)
+                person_leaving_area = get_image_color(REJECTED_PERSON_LEAVING_POS)
 
         elif Logic.NoTicket:
             print("NO TICKET")
@@ -181,22 +177,22 @@ while get_image_color(DAY_TEST_POSITION) == DAY_COLOR:
             reset_person()
 
             while person_leaving_area != PERSON_COLOR:
-                person_leaving_area = get_image_color(REJECTED_PERSON_LEAVING_POSITION)
+                person_leaving_area = get_image_color(REJECTED_PERSON_LEAVING_POS)
 
         elif not Logic.ValidTicket:
             print("INVALID TICKET")
             process_passport("Rejected")
-            return_documents(SECONDARY_DOCUMENT_SLOT_POSITION)
+            return_documents(SECONDARY_DOCUMENT_SLOT_POS)
             reset_person()
 
             while person_leaving_area != PERSON_COLOR:
-                person_leaving_area = get_image_color(REJECTED_PERSON_LEAVING_POSITION)
+                person_leaving_area = get_image_color(REJECTED_PERSON_LEAVING_POS)
 
         else:
             print("INVALID PASSPORT")
             process_passport("Rejected")
-            return_documents(SECONDARY_DOCUMENT_SLOT_POSITION)
+            return_documents(SECONDARY_DOCUMENT_SLOT_POS)
             reset_person()
 
             while person_leaving_area != PERSON_COLOR:
-                person_leaving_area = get_image_color(REJECTED_PERSON_LEAVING_POSITION)
+                person_leaving_area = get_image_color(REJECTED_PERSON_LEAVING_POS)

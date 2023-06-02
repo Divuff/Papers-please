@@ -11,7 +11,7 @@ from datetime import datetime
 
 from Colors import ARSTOTZKA_COLOR, PERSON_COLOR, TEXTBOX_COLOR, DAY_COLOR, DOCUMENT_AREA_COLOR, WALL_COLOR, \
     ANTEGRIA_COLOR, OBRISTAN_COLOR, UNITEDFED_COLOR, REPUBLIA_COLOR, IMPOR_COLOR, KOLECHIA_COLOR, LadyCard, \
-    LadyCardSecondary, TICKETCOLOR, TICKETCOLOR2
+    LadyCardSecondary, TICKET_COLOR, TICKET_COLOR2
 
 # Logic Variables
 PersonPresent = False
@@ -189,7 +189,7 @@ def textdetect(inspect_position):
     # Convert the image to grayscale and save it as a temporary file
     image = np.array(ImageGrab.grab(bbox=inspect_position))
     gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    temp_image_path = '../temp_image.png'
+    temp_image_path = '../../temp_image.png'
     cv2.imwrite(temp_image_path, gray_image)
 
     # Read the temporary image file and send it to Google Vision API
@@ -340,7 +340,7 @@ def lack_of_document(document_type):
 
 def passport_check():
     area = get_image_color(DOCUMENT_AREA_POSITION)
-    if area != DOCUMENT_AREA_COLOR and area != TICKETCOLOR:
+    if area != DOCUMENT_AREA_COLOR and area != TICKET_COLOR:
         # MOVE PASSPORT TO SLOT
         drag_and_drop(PASSPORT_POSITION, PASSPORT_SLOT_POSITION)
         return True
@@ -351,7 +351,7 @@ def passport_check():
 def ticket_check():
     area = get_image_color(DOCUMENT_AREA_POSITION)
     print(area)
-    if area == TICKETCOLOR or area == TICKETCOLOR2:
+    if area == TICKET_COLOR or area == TICKET_COLOR2:
         drag_and_drop(SECONDARY_DOCUMENT_POSITION, SECONDARY_DOCUMENT_SLOT_POSITION)
 
         return True
