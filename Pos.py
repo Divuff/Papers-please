@@ -60,12 +60,12 @@ positions = {
     'Entry_permit_name_pos': (1016, 584, 1491, 615),
     'Entry_permit_id_pos': (1135, 714, 1357, 748),
     'Entry_permit_purpose_pos': (1227, 783, 1407, 807),
-    'Entry_permit_duration_pos': (1237, 841, 1394, 869),
+    'Entry_permit_duration_pos': (1271, 824, 1390, 888),
     'Entry_permit_date_pos': (1160, 900, 1491, 930),
     'Entry_permit_rule_pos': (1020, 1155),
     
-    'Transcript_slot_pos': (2020, 1200),
-    'Transcript_text_pos': (1760, 850, 2283, 1182)
+    'Transcript_slot_pos': (2020, 1300),
+    'Transcript_text_pos': (1775, 968, 2227, 1167)
 }
 
 NAME = ""
@@ -124,7 +124,7 @@ country_dict = {
         'Photo_person_inspect_pos': (1150, 880, 1370, 970),
         
         'Passport_name_pos': (1871, 967, 2200, 998),
-        'Passport_id_pos': (2091, 1207, 2316, 1231)
+        'Passport_id_pos': (1870, 750, 2110, 790)
     },
     KOLECHIA_COLOR: {
         'Name': 'Kolechia',
@@ -132,7 +132,7 @@ country_dict = {
         'Gender_pos': (2128, 1095),
         'Country_pos': (1450, 810),
 
-        'Date_pos': (2115, 1145, 2300, 1178),
+        'Date_pos': (2115, 1147, 2287, 1172),
         'City_pos': (2115, 1115, 2330, 1143),
         'Person_gender_inspect_pos': (1260, 875, 1495, 969),
         'Photo_person_inspect_pos': (1150, 910, 1370, 992),

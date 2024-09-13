@@ -78,26 +78,26 @@ while get_image_color(positions['Day_test_pos']) == DAY_COLOR:
             drag_and_drop(positions['Rule_book_slot_pos'], positions['Rule_book_pos'])
 
         if Logic.CorrectCity:
-            print("Valid issuing city!")
-            Logic.CorrectDate = up_to_date_check(country_data['Date_pos'], positions['Clock_pos'])
-        else:
-            print("Invalid issuing city!")
+                print("Valid issuing city!")
+                Logic.CorrectDate = up_to_date_check(country_data['Date_pos'], positions['Clock_pos'])
 
-        if Logic.CorrectDate:
-            Logic.PersonGenderMatch = inspection(country_data['Gender_pos'], positions['Person_pos'],
-                                                 country_data['Person_gender_inspect_pos'])
-            print("Valid Date!")
-        else:
-            print("Passport Out Of Date!")
+                if Logic.CorrectDate:
+                    print("Valid Date!")
+
+        if Logic.CorrectCity and Logic.CorrectDate:
+                Logic.PersonGenderMatch = inspection(country_data['Gender_pos'], positions['Person_pos'], country_data['Person_gender_inspect_pos'])
+
+                if Logic.PersonGenderMatch:
+                    print("Valid Gender!")
 
         if Logic.PersonGenderMatch:
-            Logic.PhotoPersonMatch = inspection(country_data['Photo_pos'], positions['Person_pos'], country_data['Photo_person_inspect_pos'])
-            print("Valid Gender!")
-        else:
-            print("Invalid Gender!")
+                Logic.PhotoPersonMatch = inspection(country_data['Photo_pos'], positions['Person_pos'], country_data['Photo_person_inspect_pos'])
+
+                if Logic.PhotoPersonMatch:
+                    print("Valid Photo!")
 
         if Logic.PhotoPersonMatch:
-            process_passport("Approved")
+                process_passport("Approved")
 
         # NO PASSPORT
         elif Logic.NoPassport:

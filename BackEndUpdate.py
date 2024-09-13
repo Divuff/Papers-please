@@ -10,13 +10,46 @@ from PIL import ImageGrab
 from google.cloud import vision
 
 import Logic
+from Text_Detection import *
 from Pos import positions, country_dict
 from Colors import ENTRY_PERMIT_COLOR, TEXTBOX_COLOR, DOCUMENT_AREA_COLOR, TICKET_COLOR, TICKET_COLOR2, PERSON_COLOR
+from Text_Detection import word_search
+
+
+# Define the purpose_data tuple
+purpose_data = [
+    ("immigrate", [
+        "immigrating ",
+        "live with ",
+        "i will move "
+    ]),
+    ("visit", [
+        "visit ",
+        "visiting"
+    ]),
+    ("transit", [
+        "transit ",
+        "passing through"
+    ])
+]
+
+
+time_length_data = (
+    ("2 days", {"2 days", "two days", "48 hours", "forty-eight hours", "couple days", "a couple of days"}),
+    ("1 week", {"1 week", "one week", "7 days", "seven days", "a week"}),
+    ("14 days", {"14 days", "two weeks", "2 weeks", "couple of weeks", "couple weeks", "a couple of weeks"}),
+    ("1 month", {"1 month", "one month", "30 days", "thirty days", "4 weeks", "four weeks"}),
+    ("2 months", {"2 months", "two months", "8 weeks", "eight weeks", "a couple of months"}),
+    ("3 months", {"3 months", "three months", "90 days", "ninety days", "12 weeks", "twelve weeks", "a few months"}),
+    ("6 months", {"6 months", "six months", "180 days", "one hundred eighty days", "half a year"}),
+    ("1 year", {"1 year", "one year", "365 days", "three hundred sixty-five days", "twelve months"}),
+    ("forever", {"forever", "immigrating", "live with", "i will move"})
+)
 
 Matching = "MATCHING"
 
 # Initialize the Google Vision client
-os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = 'C:/Users/Divuff.DESKTOP-PBPI579/Documents/papers-please-382221-065ea6c09fa5.json'
+os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = 'C:/Users/dunke/Downloads/papers-please-382221-ee7f3abe8cd7.json'
 client = vision.ImageAnnotatorClient()
 
 
@@ -40,6 +73,8 @@ def drag_and_drop(start_position, end_position):
     move_mouse(end_position)
     time.sleep(0.3)
     pyautogui.mouseUp(button='left')
+
+    
 
 
 def textdetect(inspect_position):
@@ -197,6 +232,35 @@ def compare_pos_text(text1_pos, text2_pos):
         return True
     else:
         return False
+    
+def levenshtein_ratio(string1, string2):
+    distance = Levenshtein.distance(string1, string2)
+    max_length = max(len(string1), len(string2))
+    ratio = (max_length - distance) / max_length
+    return ratio
+
+def test_compare_pos_text(text1_pos, text2_pos):
+    text = textdetect(text1_pos)
+    text2 = textdetect(text2_pos)
+
+    text = text.strip()
+    text2 = text2.strip()
+
+    text = text.replace("-", "")
+    text2 = text2.replace("-", "")
+
+    print(text)
+    print(text2)
+
+    j = levenshtein_ratio(text, text2)
+    print("Levenshtein Ratio:", j)
+
+    if ratio(text, text2) == 0.9:
+        text2_pos = word_search(text, text2_pos)
+    elif text == text2:
+        return True
+    else:
+        return False
 
 
 def compare_within_pos__text(text1_pos, text2_pos):
@@ -290,31 +354,31 @@ def reset_person():
     Logic.ValidIdCard = False
 
 
-def find_matching_key(text1_pos, text2_pos, dict):
+def test_find_matching_key(text1_pos, text2_pos, data):
     first_string = textdetect(text1_pos)
     second_string = textdetect(text2_pos)
     
-    print(first_string)
-    print(second_string)
+    # Convert strings to lowercase for case-insensitive comparison
+    first_string_lower = first_string.lower()
+    second_string_lower = second_string.lower().replace("0", "O")
     
+    print("Entity Permit Text:", first_string_lower)
+    print("Transcript Text:", second_string_lower)
 
-    # Convert the second string to lowercase for case-insensitive comparison
-    second_string = second_string.lower()
-    first_string = first_string.lower()
-    second_string = second_string.replace("0", "O")
+    # Iterate through the data
+    for key, values in data:
+        # Check if the key matches the first string (case-insensitive)
+        if first_string_lower in key.lower():
+            print("Key match found:", key.lower())
+            # Iterate through the values associated with the key
+            for value in values:
+                # Check if the value is in the second string
+                if value.lower() in second_string_lower:
+                    print("Value in Data:", value)
+                    return True  # Exit the function once a match is found
 
-    # Iterate over the time_length_dict
-    for key, values in dict.items():
-        # Check if the first string matches the key
-        if first_string == key:
-            # Check if any part of the second string matches the values
-            if any(value in second_string for value in values):
-                return True
-            else:
-                return False
-            break  # Exit the loop since a match is found
-    else:
-        raise ValueError("Date Key not found")
+    print("Value not in Data")
+    return False
 
 def lack_of_document(document_type):
     textbox_area = ()
@@ -495,4 +559,5 @@ def process_passport(passport_status):
         
         while not Logic.NextPerson:
             Logic.NextPerson = compare_pos_color(positions['Rejected_person_leaving_pos'], PERSON_COLOR)
+
 

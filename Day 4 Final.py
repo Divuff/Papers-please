@@ -1,6 +1,6 @@
 from BackEndUpdate import *
-from Colors import ARSTOTZKA_COLOR, ENTRY_PERMIT_COLOR2, TEXTBOX_COLOR, DAY_COLOR, DOCUMENT_AREA_COLOR, WALL_COLOR, TICKET_COLOR2, \
-    TICKET_COLOR, ENTRY_PERMIT_COLOR
+from Colors import ARSTOTZKA_COLOR, ENTRY_PERMIT_COLOR2, TEXTBOX_COLOR, DAY_COLOR, DOCUMENT_AREA_COLOR, WALL_COLOR, IDCARD_COLOR, \
+    ENTRY_PERMIT_COLOR
 
 from Pos import positions
 import time
@@ -31,8 +31,8 @@ while get_image_color(positions['Day_test_pos']) == DAY_COLOR:
     if Logic.TextBoxPresent and Logic.PersonPresent:
         time.sleep(1.5)
         Logic.PassportPresent = triple_not_compare_pos_color(positions['Document_area_pos'], DOCUMENT_AREA_COLOR,
-                                                             TICKET_COLOR,
-                                                             TICKET_COLOR2)
+                                                             IDCARD_COLOR,
+                                                             ENTRY_PERMIT_COLOR)
 
         if Logic.PassportPresent:
             print("Passport Detected")
@@ -123,9 +123,9 @@ while get_image_color(positions['Day_test_pos']) == DAY_COLOR:
                 
                 drag_and_drop(positions['Interrogate_pos'], positions['Transcript_slot_pos'])
 
-                Logic.ValidEntryPermitPurpose = find_matching_key(positions['Entry_permit_purpose_pos'], positions['Transcript_text_pos'], purpose_dict)
+                Logic.ValidEntryPermitPurpose = test_find_matching_key(positions['Entry_permit_purpose_pos'], positions['Transcript_text_pos'], purpose_data)
 
-                Logic.ValidEntryPermitDuration = find_matching_key(positions['Entry_permit_duration_pos'], positions['Transcript_text_pos'], time_length_dict)
+                Logic.ValidEntryPermitDuration = test_find_matching_key(positions['Entry_permit_duration_pos'], positions['Transcript_text_pos'], time_length_data)
 
                 drag_and_drop(positions['Transcript_slot_pos'], positions['Interrogate_pos'])
 

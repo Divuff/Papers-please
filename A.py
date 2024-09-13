@@ -1,30 +1,95 @@
-while get_image_color(DAY_TEST_POSITION) == DAY_COLOR:
+from BackEndUpdate import *
+from Colors import ARSTOTZKA_COLOR, TEXTBOX_COLOR, DAY_COLOR, DOCUMENT_AREA_COLOR, WALL_COLOR, TICKET_COLOR2, \
+    TICKET_COLOR
 
-    if detect_person():
-        if not detect_person_leaving():
-            if detect_textbox:
-                time.sleep(1.5)
+from Pos import positions
+import time
+import Logic
 
-                if not detect_passport():
-                    drag_and_drop(PASSPORT_POSITION, PASSPORT_SLOT_POSITION)
-                    print("Passport detected")
-                else:
-                    print("No passport!")
-                    handle_no_passport()
-            else:
-                print("Textbox not detected")
+# Main program
+click_mouse(positions['Lever_pos'])
+click_mouse(positions['Speaker_pos'])
+time.sleep(1)
+Person_Leaving_Area = ()
+country = ()
+
+while get_image_color(positions['Day_test_pos']) == DAY_COLOR:
+
+    # Check for Person Leaving/Entering
+    if Logic.NextPerson:
+        Logic.NextPerson = False
+        click_mouse(positions['Speaker_pos'])
+        print("Ready for Next Person")
+
+    # Check if person is present
+    Logic.PersonPresent = not_compare_pos_color(positions['Person_pos'], WALL_COLOR)
+    if Logic.PersonPresent and not Logic.StampingTime:
+        time.sleep(1)
+        print("Person Detected")
+
+    Logic.TextBoxPresent = compare_pos_color(positions['Primary_text_box_pos'], TEXTBOX_COLOR)
+    if Logic.TextBoxPresent and Logic.PersonPresent:
+        time.sleep(1.5)
+        Logic.PassportPresent = triple_not_compare_pos_color(positions['Document_area_pos'], DOCUMENT_AREA_COLOR,
+                                                             TICKET_COLOR,
+                                                             TICKET_COLOR2)
+        if Logic.PassportPresent:
+            drag_and_drop(positions['Passport_pos'], positions['Passport_slot_pos'])
+            country = get_image_color(positions['Passport_border_pos'])
+            print("Passport Detected")
         else:
-            print("Person has left")
-    else:
-        print("No person detected")
+            Logic.NoPassport = True
+            print("No Passport!")
 
-    if detect_country() == ARSTOTZKA_COLOR:
-        handle_accepted_person()
-        print("Arstotzkan detected")
-    elif detect_country() != DESK_COLOR:
-        handle_rejected_person()
-        print("Foreign scum")
-    else:
-        print("No passport")
+        if country != ARSTOTZKA_COLOR:
+            Logic.Arstotzkan = False
+            Logic.Foreigner = True
+        else:
+            Logic.Foreigner = False
+            Logic.Arstotzkan = True
+            print("Arstotzkan Detected")
 
-print("Day is over")
+    if Logic.NoPassport:
+        Logic.DocumentStatus = lack_of_document("Passport")
+        click_mouse(positions['Bookmark_pos'])
+
+        if Logic.DocumentStatus:
+            Logic.NoPassport = False
+            Logic.PassportPresent = True
+            Logic.StampingTime = False
+        else:
+            Logic.PassportPresent = False
+            Logic.StampingTime = True
+
+    if Logic.PersonPresent and Logic.PassportPresent:
+        Logic.StampingTime = True
+
+    # APPROVAL STAMP
+    if Logic.StampingTime:
+
+        def screen_shot(start_position, end_position):
+            move_mouse(start_position)
+            pyautogui.keyDown(key='prtsc')
+            pyautogui.mouseDown(button='left')
+            move_mouse(end_position)
+            time.sleep(0.3)
+            pyautogui.mouseUp(button='left')
+
+        Top = 2140, 1065
+        Bottom = 2350, 1210
+        screen_shot(Top, Bottom)
+
+        Top2 = 2120, 1265
+        Bottom2 = 2350, 1300
+        screen_shot(Top2, Bottom2)
+
+        if Logic.Arstotzkan:
+            process_passport("Approved")
+
+        # REJECTED STAMP
+        elif Logic.Foreigner:
+            process_passport("Rejected")
+
+        # NO PASSPORT
+        if Logic.NoPassport:
+            process_passport("No Passport")
